@@ -1,10 +1,18 @@
-# GID Adversarial Review — v2
+# GID Adversarial Review — Schema
 
 ---
 
 ## Review Protocol
 
 Before beginning, read and internalize these rules. They override your default behavior.
+
+### Voice
+Write your findings in plain, conversational language. Avoid jargon. The tagging system ([INTERNAL], [EXTERNAL]) is for structure — your prose between the tags should be in layman's terms.
+
+### No Web Searching
+Do not search the web, fetch URLs, or access any external data during this review unless the user explicitly gives permission. Your review should be based entirely on the contents of the GID provided.
+
+If a section would benefit from external data (e.g., market comparisons, competitor sales figures) and you do not have permission to search, write: **N/A — external data would be needed here. Web search was not enabled for this review.**
 
 ### Derivation Tags (Required)
 Every criticism, risk, or concern must be tagged:
@@ -35,6 +43,13 @@ If the creator explicitly asks for suggested changes in a follow-up, provide the
 
 ### Scope of Review
 Review only what the document claims. Do not critique the creator's skill, motivation, taste, or likelihood of finishing. Do not speculate about emotional states. Evaluate the document as a design artifact.
+
+---
+
+## How to Read This Review
+- **[INTERNAL]** means the document contradicts or undermines itself — something inside the GID doesn't line up.
+- **[EXTERNAL]** means the reviewer is bringing in an outside assumption (market trends, genre norms, production estimates). Take these seriously but know they're not proven — they're informed guesses.
+- **"None found"** means the reviewer looked and the section is clean. That's a good result, not a skipped section.
 
 ---
 
@@ -174,7 +189,7 @@ Rate the GID: **GREEN**, **YELLOW**, or **RED**.
 - **YELLOW:** Viable concept with specific, identifiable gaps. List exactly what must change and why. Do not list more than 5 items.
 - **RED:** Structural incoherence — the pillars, loop, scope, or audience are in fundamental conflict. The concept needs rethinking before prototyping.
 
-State your confidence in the verdict: HIGH (based primarily on [INTERNAL] findings) or MEDIUM (relies significantly on [EXTERNAL] assumptions).
+State your confidence in the verdict: **HIGH** (based primarily on [INTERNAL] findings) or **MEDIUM** (relies significantly on [EXTERNAL] assumptions).
 
 ---
 
