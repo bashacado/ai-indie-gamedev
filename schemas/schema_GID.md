@@ -1,55 +1,64 @@
 # Game Idea Document — Schema
-
+> **When responding, remove these blockquoted instructions and return only the filled-in sections. If a section doesn't apply to your game, write "N/A" and briefly say why. Don't leave sections blank — a deliberate "N/A" is more useful than an empty heading.** 
+> **Hard constraints — these color every answer below:**
+> - Solo dev budget: ~365 hours/year
+> - Deploy on Windows (Steam) and/or iOS (iPhone/tablet). No consoles.
+> - No photorealistic art. No side-scrollers. 3D preferred.
+> - Multiplayer only if local (zero maintenance cost post-release).
+> - Be blunt. I'd rather hear "this idea doesn't work because X" than a polished document for a doomed project.
 ---
-
-## How to Use This Template
-Fill in each section. The comments (<!-- like this -->) are guidance — delete them as you go. If a section doesn't apply to your game, write "N/A" and briefly say why. Don't leave sections blank — a deliberate "N/A" is more useful than an empty heading.
-
----
-
 ## Genre(s)
-<!-- Primary genre / subgenre blend. Be specific — "puzzle" is not a genre, "puzzle-exploration" is. -->
+> 1–2 genres. Be specific — "puzzle" is not a genre, "puzzle-exploration" is.
 
 ## Reference Games & Inspirations
-<!-- 3–5 titles. For each, state the ONE thing you're taking from it, not just the title. -->
+> 3–5 games I'm drawing from. For each: the game name, and the ONE specific thing I'm stealing from it. No vague "it has good vibes."
 - **[Title]** — [what specifically you're borrowing and why]
 
 ## Pillars
-<!-- 3–5 design pillars. Each must be mechanically testable — if you can't build a prototype that proves or disproves it, it's a vibe, not a pillar. -->
-<!-- For any pillar that involves a cost, constraint, or restriction on the player: state the specific mechanism. What is gained? What is lost? How is it enforced? -->
+> 3–5 fundamental backbones. Short and ruthless.
+> Each pillar must describe a player-facing behavior or system rule, not a feeling.
+> I should be able to point at any feature and say which pillar it serves — or cut the feature.
+> Bad: "Engaging combat." Good: "Every enemy has a telegraphed pattern the player can learn to parry."
+> For any pillar that involves a cost, constraint, or restriction on the player: state the specific mechanism. What is gained? What is lost? How is it enforced?
 1. **[Pillar]** — [Mechanism: how this works in practice, not just what it aspires to]
 2. **[Pillar]** — [Mechanism]
 3. **[Pillar]** — [Mechanism]
 
 ## Scope Limitations
-<!-- For each: name the genre expectation you're cutting, and why cutting it is a design choice, not a budget compromise. -->
+> List 2–3 features your target audience would EXPECT this game to have, that you're choosing to cut anyway. For each, name what you gain from the cut (time, focus, simplicity). Cutting things nobody expected doesn't count.
+> Frame each as a design choice, not a budget compromise. What does cutting this force you to do instead?
 - **No [feature]** — [What players expect and why you're not doing it. What does cutting this force you to do instead?]
 
 ## Core Loop
-<!-- One sentence: the loop as a chain of verbs. Then expand. -->
+> Primary loop in arrow format (e.g. Explore → Gather → Craft → Upgrade → Explore).
+> The core loop must visibly exercise EVERY pillar. If a pillar is not present in the loop, it is aspirational, not real. Flag this for yourself.
 **[Verb] → [Verb] → [Verb] → [Verb] → [Repeat]**
 
-<!-- The core loop must visibly exercise EVERY pillar. If a pillar is not present in the loop, it is aspirational, not real. Flag this for yourself. -->
+> Answer all three:
+> 1. How does this loop generate replayability without large amounts of handcrafted content?
+> 2. What is the MINIMUM content needed to ship this loop? (Be concrete — e.g. "8 enemy types, 1 biome, 20 items") No ranges — pick a number and defend it.
+> 3. If procedural generation is used, list exactly which variables are being remixed and their value ranges. "Procedural" is not a plan. If hand-authored, how do you prevent content drought?
 
 1. **Replayability mechanism:** [How does the player get value from a second session? If "they don't," say so — that's a valid answer for some designs.]
-2. **Minimum content to ship:** [Quantify: number of levels, rooms, encounters, systems. No ranges — pick a number and defend it.]
-3. **Procedural vs. authored:** [Is content procedural, hand-authored, or hybrid? If hand-authored, how do you prevent content drought? If procedural, how do you prevent incoherence?]
+2. **Minimum content to ship:** [Quantify: number of levels, rooms, encounters, systems.]
+3. **Procedural vs. authored:** [Is content procedural, hand-authored, or hybrid? State the strategy and its risks.]
 
 ## Session Design
+> Fill in all four:
 - **Target session length:** [X–Y minutes. What does one "unit" of play look like?]
 - **Target total player engagement:** [X–Y hours first playthrough; X–Y for replay if applicable]
 - **What makes the player stop AND want to come back?** [Stop trigger and return hook — be specific]
 - **Why does this match monetization?** [Connect session design to how you're charging]
 
 ## Save System Philosophy
-<!-- This is a design decision, not a technical one. -->
+> This is a design decision, not a technical one.
 - **Can the player save manually?** [Yes/No. If yes, does this undermine any pillar?]
 - **Is there autosave?** [When does it trigger? What state does it capture?]
 - **Can the player save-scum?** [If yes, does this break any intended consequence or cost? If no, how is this communicated?]
 - **What happens on ragequit?** [Player closes the app mid-session. What state do they return to?]
 
 ## Cognitive Load Strategy
-<!-- If your game involves tracking state, remembering information, or managing complexity: how do you keep it manageable? -->
+> If your game involves tracking state, remembering information, or managing complexity: how do you keep it manageable?
 - **What is the player asked to hold in their head at any given time?** [Be honest — count the variables]
 - **What aids exist?** [UI elements, environmental cues, journals, logs, visible state, audio cues — or nothing]
 - **What is the maximum cognitive load at the hardest point in the game?** [Describe the worst case]
@@ -58,41 +67,48 @@ Fill in each section. The comments (<!-- like this -->) are guidance — delete 
 ---
 
 ## Elevator Pitch
-<!-- 2–4 sentences. A stranger reads this and knows: what the game IS, what makes it DIFFERENT, and what the VISUAL HOOK is. -->
+> 2–4 sentences. A stranger reads this and knows: what the game IS, what makes it DIFFERENT, and what the VISUAL HOOK is. If I post a screenshot or gif of this game, why would someone stop scrolling?
 
 ## The Big But
-<!-- "My game is like [known title], but [the one key difference]." One sentence. -->
+> "My game is like ___, but ___." One sentence.
 
 ## Target Audience
-<!-- Who specifically. Not "gamers." Reference comparable titles they already like. Age range. Psychographic: what do they enjoy about games? What do they dislike? -->
+> Who is this for? Not "gamers." Reference comparable titles they already like. Age range. Psychographic: what do they enjoy about games? What do they dislike?
 
 ## Monetization Model
-<!-- Premium, F2P, subscription, ad-supported, etc. Price point. Platform-specific pricing if different. IAP/DLC plans or explicit lack thereof. -->
+> Premium, F2P, subscription, ad-supported, etc. Price point. Platform-specific pricing if different. IAP/DLC plans or explicit lack thereof. This constrains design heavily, especially across Steam + iOS.
 
 ---
 
 ## Platform Considerations
-<!-- For each platform: -->
-<!-- - Input method and why it works for your design -->
-<!-- - Any constraints the platform imposes -->
-<!-- - Is this platform primary or secondary? Be honest — "both are first-class" is almost always wrong. -->
+> For each platform:
+> - Input method and why it works for your design
+> - Any constraints the platform imposes
+> - Is this platform primary or secondary? Be honest — "both are first-class" is almost always wrong.
+> If it doesn't work on both, say so.
 
 ## Assets
+> What do I need to create or purchase? Be frugal, avoid hand-crafting.
+
 **What's needed:**
-<!-- Categorized list: art, audio, UI, code systems, etc. -->
+> Categorized list: art, audio, UI, code systems, etc.
 
 **Marketing-critical assets:**
-<!-- Which assets MUST exist for the game to be marketable? (e.g., a gif-able moment, a trailer-ready sequence, a screenshot that communicates the hook) -->
+> Which assets MUST exist for the game to be marketable? (e.g., a gif-able moment, a trailer-ready sequence, a screenshot that communicates the hook)
 
 **Most expensive category:** [What it is and how you're controlling cost]
 
 **Where AI generation helps:** [Specific use cases, not "AI will help with everything"]
 
 ## Tools & Workflow
-<!-- Engine, modeling tools, audio tools, version control, CI/CD if applicable. -->
-<!-- Rule: no custom tooling unless you can name the specific problem it solves and the hour cost. -->
+> Engine, modeling tools, audio tools, version control, CI/CD if applicable.
+> Rule: no custom tooling unless you can name the specific problem it solves and the hour cost.
+> Unity/Blender compatibility matters if they aren't standalone.
 
 ## First Playable Milestone
+> What is the minimum slice that proves the core loop is fun?
+> Define it concretely — what does the player DO in this build, and what's missing that I'll add later?
+
 **What the player does:** [Describe the exact experience in one paragraph]
 
 **What's missing:** [Everything NOT in the milestone]
@@ -104,6 +120,10 @@ Fill in each section. The comments (<!-- like this -->) are guidance — delete 
 **Estimate:** [Hours, broken down by discipline]
 
 ## Phase Breakdown
+> Break the full project into phases. For each phase:
+> - What it includes
+> - T-shirt size estimate (S/M/L/XL where S≈20h, M≈50h, L≈100h, XL≈200h)
+> - Flag which phase is most likely to balloon and why
 
 | Phase | Content | Size | Balloon Risk |
 |---|---|---|---|
@@ -118,34 +138,35 @@ Fill in each section. The comments (<!-- like this -->) are guidance — delete 
 **Minimum shippable game:** [Which phases, what total hours, what's lost]
 
 ## Risks & Mitigations
-<!-- 3–5 risks. For each: -->
-<!-- - The risk (what goes wrong) -->
-<!-- - Why it's plausible for THIS game specifically -->
-<!-- - Mitigation (what you'll do about it) -->
-<!-- - First cut if time runs short (what you sacrifice to solve it) -->
+> 3–5 risks. For each:
+> - The risk (what goes wrong)
+> - Why it's plausible for THIS game specifically
+> - Mitigation (what you'll do about it)
+> - First cut if time runs short (what you sacrifice to solve it)
+> No orphaned risks.
 
 1. **[Risk]** — [Why plausible]. *Mitigation:* [action]. *First cut:* [sacrifice].
 
 ---
 
 ## Falsifiable Assumptions
-<!-- 3–5 assumptions this design depends on. These are hypotheses, not facts. -->
-<!-- Each must be testable: a playtest, a data point, or a market signal could disprove it. -->
-<!-- If an assumption is disproved, what changes? -->
+> 3–5 assumptions this design depends on. These are hypotheses, not facts.
+> Each must be testable: a playtest, a data point, or a market signal could disprove it.
+> If an assumption is disproved, what changes?
 
 1. **[Assumption]** — [How you would test it. What changes if it's wrong.]
 2. **[Assumption]** — [Test. Consequence if wrong.]
 
 ## Non-Negotiables
-<!-- What cannot be cut, softened, or changed without killing the game's identity? -->
-<!-- If any of these prove unworkable, the project needs fundamental rethinking, not scope adjustment. -->
-<!-- Keep this list short (2–4 items). If everything is non-negotiable, nothing is. -->
+> What cannot be cut, softened, or changed without killing the game's identity?
+> If any of these prove unworkable, the project needs fundamental rethinking, not scope adjustment.
+> Keep this list short (2–4 items). If everything is non-negotiable, nothing is.
 
 1. **[Element]** — [Why this is identity-defining, not just preferred]
 
 ## Kill Criteria
-<!-- At what point do you stop? State concrete, measurable thresholds. -->
-<!-- These are commitments to yourself. If you can rationalize past them, they're too vague. -->
+> At what point do you stop? State concrete, measurable thresholds.
+> These are commitments to yourself. If you can rationalize past them, they're too vague.
 
 1. **[Milestone/trigger]** → [Decision: pivot, cut, or abandon]
 2. **[Milestone/trigger]** → [Decision]

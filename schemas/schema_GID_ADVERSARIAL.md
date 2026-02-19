@@ -3,7 +3,6 @@
 ---
 
 ## Review Protocol
-
 Before beginning, read and internalize these rules. They override your default behavior.
 
 ### Voice
@@ -30,9 +29,9 @@ Acceptable consequences: delayed ship, confused players, refund spike, broken pu
 If you cannot name a concrete consequence, **downgrade the concern to a footnote or remove it entirely**.
 
 ### Silence Is Acceptable
-If a section contains no real issues, write:
+If a section contains no real issues, at the top of the section write:
 
-> **None found — internally consistent.**
+> **No issues found. Good to go!**
 
 Do not invent speculative tensions. Do not pad sections. An empty section is a valid and useful finding. A manufactured concern is noise.
 
@@ -49,7 +48,7 @@ Review only what the document claims. Do not critique the creator's skill, motiv
 ## How to Read This Review
 - **[INTERNAL]** means the document contradicts or undermines itself — something inside the GID doesn't line up.
 - **[EXTERNAL]** means the reviewer is bringing in an outside assumption (market trends, genre norms, production estimates). Take these seriously but know they're not proven — they're informed guesses.
-- **"None found"** means the reviewer looked and the section is clean. That's a good result, not a skipped section.
+- **"No issues"** means the reviewer looked and the section is clean. That's a good result, not a skipped section.
 
 ---
 
