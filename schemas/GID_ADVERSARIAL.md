@@ -1,73 +1,189 @@
-# GID Adversarial Review
+# GID Adversarial Review — v2
 
-> **Role:** You are a skeptical producer reviewing a solo dev's Game Idea Document. Your job is to find the holes BEFORE they cost months of work. Be constructive but never polite at the expense of honesty.
+---
 
-> **Input:** Paste the completed GID above this prompt, or attach it.
+## Review Protocol
+
+Before beginning, read and internalize these rules. They override your default behavior.
+
+### Derivation Tags (Required)
+Every criticism, risk, or concern must be tagged:
+
+- **[INTERNAL]** — Derived directly from contradictions, omissions, or logical inconsistencies *within the document itself*. These are structural findings.
+- **[EXTERNAL]** — Derived from genre norms, market data, comparable titles, or assumptions not stated in the document. When using this tag, **state the assumption explicitly**.
+
+If you cannot tag a criticism, it is too vague to include. Remove it.
+
+### Consequence Clause (Required)
+For every issue raised, state the **specific consequence** if the creator ignores it.
+
+Acceptable consequences: delayed ship, confused players, refund spike, broken puzzle chain, failed marketing, retention drop, budget overrun, unsolvable game state.
+
+If you cannot name a concrete consequence, **downgrade the concern to a footnote or remove it entirely**.
+
+### Silence Is Acceptable
+If a section contains no real issues, write:
+
+> **None found — internally consistent.**
+
+Do not invent speculative tensions. Do not pad sections. An empty section is a valid and useful finding. A manufactured concern is noise.
+
+### Observations Only (Default)
+Present all findings as **observations**, not prescriptions. Do not tell the creator what to do — tell them what you found.
+
+If the creator explicitly asks for suggested changes in a follow-up, provide them then. Not before.
+
+### Scope of Review
+Review only what the document claims. Do not critique the creator's skill, motivation, taste, or likelihood of finishing. Do not speculate about emotional states. Evaluate the document as a design artifact.
 
 ---
 
 ## Contradiction Scan
 
-> Check for internal contradictions. Specifically test these pairs:
-> - Pillars vs. Core Loop: Does the loop actually exercise every pillar? Are any pillars decorative?
-> - Scope Limitations vs. Core Loop: Did we cut something the loop secretly depends on?
-> - Session Design vs. Monetization: Does the session structure fight the business model?
-> - Target Audience vs. Platform: Is the audience actually on the target platforms?
-> - Elevator Pitch vs. Pillars: Does the pitch promise something the pillars don't support?
->
-> List each contradiction found, or state "None found" per pair.
+### Pillars vs. Core Loop
+For each pillar, determine whether the Core Loop section explicitly exercises it.
+
+- If a pillar is present in the loop: state how.
+- If a pillar is absent from the loop: flag it as **[INTERNAL]** with the consequence of the gap.
+- If a pillar is ambiguous: quote the relevant language from both sections and state the ambiguity.
+
+### Scope Limitations vs. Core Loop
+For each scope limitation, determine whether it conflicts with or undermines the core loop.
+
+If no conflict exists, write: **None found.**
+
+### Session Design vs. Monetization
+Check whether the session length, total playtime, and pricing are consistent with each other and with the stated target audience.
+
+Flag only **[INTERNAL]** contradictions (the document contradicts itself) or **[EXTERNAL]** market risks (the document's claims conflict with known market data — state the data source or assumption).
+
+### Target Audience vs. Platform
+Check whether the stated audience aligns with the stated platforms. Flag structural mismatches only.
+
+### Elevator Pitch vs. Pillars
+Check whether the pitch promises something the pillars and mechanics can deliver.
+
+If the pitch implies a frequency, scale, or spectacle level that the document does not specify, flag the gap as **[INTERNAL]** — the document is making an unquantified promise.
+
+---
+
+## Falsifiable Assumptions Audit
+
+If the GID contains a **Falsifiable Assumptions** section, evaluate each assumption:
+
+1. Is it actually falsifiable? (Can a playtest or data point disprove it?)
+2. Is there a stated or implied test for it?
+3. Does the rest of the document behave as though this assumption is already proven?
+
+If the GID does not contain this section, note its absence and state what assumptions appear to be implicit in the design.
+
+---
+
+## Non-Negotiables Audit
+
+If the GID contains a **Non-Negotiables** section, check:
+
+1. Does anything elsewhere in the document propose cutting or softening a non-negotiable? (This is a direct **[INTERNAL]** contradiction.)
+2. Are the non-negotiables actually load-bearing? (Would removing one truly kill the game, or is it aspirational?)
+
+If the GID does not contain this section, note its absence.
+
+---
 
 ## The "Who Cares?" Test
 
-> Assume I post a 10-second gif of this game on Twitter/Reddit.
-> - What EXACTLY is visually happening in that gif?
-> - Would someone who has never heard of this game stop scrolling? Why or why not?
-> - Name 1–2 existing games whose gifs consistently go viral in this genre. What do they show that this game also shows (or doesn't)?
+Describe the most compelling 10-second moment this game could produce, based only on what the document specifies.
+
+Then answer:
+- Would this stop someone from scrolling on a Steam discovery queue or social media feed?
+- If not, what is missing — and is the missing element specified elsewhere in the document or absent entirely?
+
+Tag your assessment: **[INTERNAL]** if the document describes the moment but under-specifies its impact, **[EXTERNAL]** if you're importing expectations from comparable titles.
+
+Do not prescribe marketing strategy. Observe whether the document contains the raw material for a compelling moment.
+
+---
 
 ## Scope Reality Check
 
-> Given the phase breakdown and 365h/year budget:
-> - Does the total add up to under 365h for a v1 release? If not, what gets cut?
-> - Which phase estimate is most likely to be wildly optimistic? Why?
-> - Is the "first playable milestone" actually the right slice to prove fun, or is it testing the wrong thing?
+### Budget Audit
+Compare the stated hour estimates against the stated scope.
+
+For each phase:
+- Is the estimate consistent with the described work?
+- If you believe the estimate is wrong, state your reasoning and tag it **[EXTERNAL]** (you are importing assumptions about production speed).
+- State the consequence of underestimation (e.g., "Phase 1 overrun delays all subsequent phases and risks motivation loss").
+
+### First Playable Milestone
+- Does the milestone test the pillars it claims to test?
+- Does the milestone test long-term sustainability or only initial novelty?
+- If the milestone passes, what remains unproven?
+
+### Reduction Test
+Describe the smallest possible version of this game that still satisfies the Non-Negotiables.
+
+- How many hours does that version take?
+- Does it feel like the same game or a different one?
+- If it feels like a different game, the scope may be structurally unstable. Note this as an **[INTERNAL]** observation.
+
+---
 
 ## The Graveyard Question
 
-> Name the SINGLE closest failed competitor — a game with a similar concept that flopped or went unnoticed.
-> - Why did it fail?
-> - What structural difference (a specific mechanic, market condition, or scope decision) prevents the same fate here?
-> - Then name 1–2 more failed or ignored games in the space.
-> - If you can't find failures, that's a red flag — either the niche is untested or you're not looking hard enough. Say so.
+Name 1–3 comparable titles that attempted something similar and either failed or struggled.
 
-## Market Saturation Probe
+For each:
+- What specifically went wrong?
+- Does this GID address that failure explicitly, implicitly, or not at all?
+- Tag as **[EXTERNAL]** — you are importing market history.
 
-> Search Steam and iOS for the 5 most recent releases in this genre from the last 12 months. How many reviews/ratings does each have?
-> - If the median is low, the audience may not be there.
-> - If the median is high, name the top performer and what makes this game mechanically distinct from it. Not aesthetically — mechanically.
+Do not use the graveyard question to argue the genre is unviable. Use it to identify specific failure modes this design should be aware of.
+
+---
 
 ## Hidden Risk Audit
 
-> Are the risks listed in the GID actually the real risks, or did the generation pass identify comfortable risks while ignoring the scary ones?
-> Name at least one risk the GID didn't list. Explain why it was likely avoided and why it matters.
+Identify 1–3 risks the document does **not** mention that are plausible given the design.
 
-## Kill Criteria
+For each:
+- State the risk.
+- State the consequence.
+- Tag as **[EXTERNAL]** and state the assumption behind the risk.
 
-> Define 2–3 concrete, measurable conditions under which I should abandon or pivot this idea.
-> E.g. "If after 60 hours the core loop prototype isn't fun without art, pivot."
-> These must be specific enough that I can't talk myself out of them.
+Do not list more than 3. If you cannot identify a risk with a concrete consequence, write: **No additional risks identified beyond what the document covers.**
+
+---
+
+## Kill Criteria Review
+
+If the GID contains kill criteria or success thresholds (e.g., "if playtesters can't complete the cluster in 30 minutes, pivot"), evaluate:
+
+1. Are the criteria specific and measurable?
+2. Are they honest? (Is the creator likely to actually follow through, or are they vague enough to rationalize past?)
+3. Are any critical decision points missing kill criteria?
+
+If the GID does not contain kill criteria, note their absence and identify 1–2 decision points where they would be most valuable.
+
+---
 
 ## Verdict
 
-> One of:
-> - **GREEN:** Viable as scoped. Proceed to first playable.
-> - **YELLOW:** Viable with changes. List the changes required before proceeding.
-> - **RED:** Fundamental issues. Do not proceed without rethinking [specific section].
->
-> Justify in 2–3 sentences.
+Rate the GID: **GREEN**, **YELLOW**, or **RED**.
 
-## Stress Tests
+- **GREEN:** Internally consistent, risks are identified and mitigated, pillars are exercised in the loop, scope is plausible. Ready to prototype.
+- **YELLOW:** Viable concept with specific, identifiable gaps. List exactly what must change and why. Do not list more than 5 items.
+- **RED:** Structural incoherence — the pillars, loop, scope, or audience are in fundamental conflict. The concept needs rethinking before prototyping.
 
-> Answer all three:
-> 1. Assume I have only 200 hours, not 365. What collapses first, and what does a 200-hour version of this game look like?
-> 2. If the 200-hour version feels like a different game, the scope is unstable. Explain why.
-> 3. What is the single most likely reason this project gets abandoned halfway through? Be psychologically honest — not just "scope creep."
+State your confidence in the verdict: HIGH (based primarily on [INTERNAL] findings) or MEDIUM (relies significantly on [EXTERNAL] assumptions).
+
+---
+
+## Self-Retraction Pass
+
+Review every criticism and risk you raised in this document. For each, answer:
+
+1. **Would this concern still hold if the creator had strong execution?** If no, it is an execution-dependent concern, not a structural one. Downgrade it or note the dependency.
+2. **Did I generate this concern because the template section demanded content, or because the document warranted it?** If the former, retract it.
+3. **Which of my findings am I most confident in, and which am I least confident in?** State both explicitly.
+
+List any retracted or downgraded items here. If none, write: **All findings sustained.**
