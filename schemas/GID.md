@@ -1,5 +1,7 @@
 # Game Idea Document
 
+> **When responding, remove these blockquoted instructions and return only the filled-in sections.**
+
 > **Hard constraints — these color every answer below:**
 > - Solo dev budget: ~365 hours/year
 > - Deploy on Windows (Steam) and/or iOS (iPhone/tablet). No consoles.
