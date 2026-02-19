@@ -8,9 +8,9 @@ Built for use with Claude, GPT, or any capable LLM.
 
 | Schema | Purpose |
 |--------|---------|
-| [GID.md](schemas/GID.md) | **Game Idea Document** — structured generation template that forces concrete mechanics, painful scope cuts, and real numbers instead of vibes. |
-| [GID_ADVERSARIAL.md](schemas/GID_ADVERSARIAL.md) | **Adversarial Review** — run in a separate session after the GID. Catches contradictions, hidden risks, market blindspots, and comfortable lies. |
-| [PROJECT_SNAPSHOT.md](schemas/PROJECT_SNAPSHOT.md) | **Project Snapshot** — canonical state document for maintaining continuity across AI chat sessions. Paste it at the start of a new thread to pick up where you left off. |
+| [GID](schemas/schema_GID.md) | **Game Idea Document** — structured generation template that forces concrete mechanics, painful scope cuts, and real numbers instead of vibes. |
+| [GID_ADVERSARIAL](schemas/schema_GID_ADVERSARIAL.md) | **Adversarial Review** — run in a separate session after the GID. Catches contradictions, hidden risks, market blindspots, and comfortable lies. |
+| [PROJECT_SNAPSHOT](schemas/schema_PROJECT_SNAPSHOT.md) | **Project Snapshot** — canonical state document for maintaining continuity across AI chat sessions. Paste it at the start of a new thread to pick up where you left off. |
 
 ## Usage
 
