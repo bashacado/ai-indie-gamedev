@@ -60,6 +60,6 @@
 
 ## Rules
 
-- Prioritize decisions and rationale over code listings.
-- Keep compact — a new thread with zero context must be able to continue from this document alone.
-- Never re-question Architecture Contracts unless explicitly unlocked with `revisit contracts`.
+> - Prioritize decisions and rationale over code listings.
+> - Keep compact — a new thread with zero context must be able to continue from this document alone.
+> - Never re-question Architecture Contracts unless explicitly unlocked with `revisit contracts`.
