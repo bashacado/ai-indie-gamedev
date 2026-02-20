@@ -1,4 +1,4 @@
-# Game Idea Document — Schema v2
+# Game Idea Document — Schema v3
 
 > **When responding, remove these blockquoted instructions and return only the filled-in sections. If a section doesn't apply to your game, write "N/A" and briefly say why. Don't leave sections blank — a deliberate "N/A" is more useful than an empty heading.**
 
@@ -13,7 +13,39 @@
 
 ---
 
-## Pre-Mortem (COMPLETE THIS FIRST)
+## Decision Density Check (COMPLETE THIS BEFORE ANYTHING ELSE)
+
+> Count the major design decisions that are still genuinely open — meaning the seed has NOT already committed to a specific answer. A decision is "open" if the seed either doesn't mention it, explicitly defers it, or presents multiple options without choosing.
+>
+> Major design decisions include: genre, core mechanic, core loop structure, level/world structure, monetization model, target audience, platform priority, input scheme, art style, progression system, session structure.
+>
+> **If 3 or fewer decisions are open:** This concept is stable. Skip to ABBREVIATED MODE below — fill in only the sections marked with ★. The remaining sections would produce elaboration, not insight. Use them only if the creator explicitly requests the full document.
+>
+> **If 4 or more decisions are open:** This concept is fluid. Fill in the FULL DOCUMENT — the schema can shape the trajectory.
+
+**Open decisions identified:** [List them]
+**Count:** [N]
+**Mode:** [ABBREVIATED / FULL]
+
+---
+
+### ★ ABBREVIATED MODE (stable concepts only)
+
+> Complete only these sections. Everything else is elaboration on settled decisions.
+
+1. Pre-Mortem
+2. Mechanical Depth Check (under Core Loop)
+3. Falsifiable Assumptions
+4. Non-Negotiables
+5. Kill Criteria
+6. Open Decisions
+7. Honest Assessment
+
+> After completing these, stop. Do not fill in the remaining sections unless the creator asks for the full document. A short, honest document that surfaces real unknowns is more valuable than a long, polished document that restates known decisions.
+
+---
+
+## Pre-Mortem (COMPLETE THIS FIRST — both modes)
 
 > Before filling in ANY other section, write the pre-mortem. This forces you to confront the concept's weaknesses before you've invested effort defending it.
 >
@@ -65,7 +97,7 @@
 2. **Minimum content to ship:** [Quantify: number of levels, rooms, encounters, systems.]
 3. **Procedural vs. authored:** [Is content procedural, hand-authored, or hybrid? State the strategy and its risks.]
 
-### Mechanical Depth Check
+### ★ Mechanical Depth Check
 > Count the distinct verbs the player performs in the core loop. A "verb" is a discrete player action with its own input and feedback (e.g., "move," "collect," "aim," "build," "choose").
 >
 > - **1 verb:** The game is a single-mechanic experience. This can work (e.g., Flappy Bird, Desert Golfing) but it means ALL engagement comes from content variety, audiovisual polish, or escalating challenge. State which of these you're relying on.
@@ -184,7 +216,7 @@
 
 ---
 
-## Falsifiable Assumptions
+## ★ Falsifiable Assumptions
 > 3–5 assumptions this design depends on. These are hypotheses, not facts.
 > Each must be testable: a playtest, a data point, or a market signal could disprove it.
 > If an assumption is disproved, what changes?
@@ -192,14 +224,14 @@
 1. **[Assumption]** — [How you would test it. What changes if it's wrong.]
 2. **[Assumption]** — [Test. Consequence if wrong.]
 
-## Non-Negotiables
+## ★ Non-Negotiables
 > What cannot be cut, softened, or changed without killing the game's identity?
 > If any of these prove unworkable, the project needs fundamental rethinking, not scope adjustment.
 > Keep this list short (2–4 items). If everything is non-negotiable, nothing is.
 
 1. **[Element]** — [Why this is identity-defining, not just preferred]
 
-## Kill Criteria
+## ★ Kill Criteria
 > At what point do you stop? State concrete, measurable thresholds.
 > These are commitments to yourself. If you can rationalize past them, they're too vague.
 
@@ -208,7 +240,7 @@
 
 ---
 
-## Open Decisions
+## ★ Open Decisions
 
 > List 2–5 design questions that this document does NOT answer — decisions that require prototyping, playtesting, or market research to resolve. For each, state what information you need and when in the phase plan you'll get it.
 >
@@ -217,6 +249,6 @@
 1. **[Decision]** — [What you need to know, and when/how you'll learn it]
 2. **[Decision]** — [Info needed, timing]
 
-## Honest Assessment
+## ★ Honest Assessment
 
 > In 2–4 sentences, state your honest opinion of this game's commercial viability and creative merit. Do not hedge with "it depends on execution" — everything depends on execution. State whether you think this is a good use of 365 hours, and why or why not. If you think the concept should be abandoned or substantially rethought, say so here.

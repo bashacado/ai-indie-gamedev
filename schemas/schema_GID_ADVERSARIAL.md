@@ -1,4 +1,4 @@
-# GID Adversarial Review — Schema v2
+# GID Adversarial Review — Schema v3
 
 ---
 
@@ -110,6 +110,17 @@ If the pitch implies a frequency, scale, or spectacle level that the document do
 
 ---
 
+## Pillar Removal Test
+
+> For each pillar in the GID, imagine removing it entirely — the game ships without it.
+>
+> - **If the game survives:** The pillar is decorative, not structural. It may describe a quality goal or an implementation detail rather than a load-bearing design commitment. Flag it as **[INTERNAL]** — the document claims this is fundamental but the design does not depend on it.
+> - **If the game collapses:** State precisely what breaks. This confirms the pillar is real.
+>
+> A GID with 4 pillars where only 2 are load-bearing has a clarity problem: the creator will spend effort defending non-essential constraints. The consequence is wasted scope protection on things that don't matter and insufficient protection on things that do.
+
+---
+
 ## Mechanical Depth Probe
 
 > This section exists because internally-consistent documents can still describe games that are too shallow to sustain engagement.
@@ -121,6 +132,8 @@ Count the distinct player verbs in the core loop. Then answer:
 2. **Escalation or variation:** Does the document describe any mechanism that changes what the player does over time (new mechanics unlocked, increasing challenge, environmental variation, narrative beats)? If yes, is it specified concretely or hand-waved? If no, the game is relying entirely on content variety and polish to sustain interest — state this explicitly.
 
 3. **The "Minute 30" question:** Describe what the player is doing 30 minutes into the game, based only on what the document specifies. Is it meaningfully different from minute 3? If not, flag as **[INTERNAL]** — the document describes a game that front-loads its appeal.
+
+4. **Engagement density:** In the first 60 minutes of gameplay, approximately how many meaningful player decisions occur (a "meaningful decision" is a choice between alternatives where the player has reason to prefer one over another)? If the ratio is fewer than 1 meaningful decision per 5 minutes of play, flag this — the game may feel passive despite being interactive. Note: "which direction to walk" is not a meaningful decision unless the game gives the player reason to prefer one direction. "Which word to attempt next" IS a meaningful decision if the game offers choice.
 
 ---
 
@@ -142,6 +155,8 @@ If the GID contains a **Non-Negotiables** section, check:
 
 1. Does anything elsewhere in the document propose cutting or softening a non-negotiable? (This is a direct **[INTERNAL]** contradiction.)
 2. Are the non-negotiables actually load-bearing? (Would removing one truly kill the game, or is it aspirational?)
+
+Cross-reference with the Pillar Removal Test above. If a non-negotiable corresponds to a pillar that was found to be decorative, flag the inconsistency.
 
 If the GID does not contain this section, note its absence.
 
