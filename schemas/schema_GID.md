@@ -17,14 +17,21 @@
 
 > Count the major design decisions that are still genuinely open — meaning the seed has NOT already committed to a specific answer. A decision is "open" if the seed either doesn't mention it, explicitly defers it, or presents multiple options without choosing.
 >
-> Major design decisions include: genre, core mechanic, core loop structure, level/world structure, monetization model, target audience, platform priority, input scheme, art style, progression system, session structure.
+> For each open decision, classify its weight:
+> - **CORE** — mechanic, loop, monetization, target audience. These define what the game IS.
+> - **STRUCTURAL** — progression system, level/world structure, platform priority, session structure, input scheme. These define how the game is built.
+> - **SURFACE** — art style, audio tone, UI approach, narrative framing. These define how the game feels but not what it is.
 >
-> **If 3 or fewer decisions are open:** This concept is stable. Skip to ABBREVIATED MODE below — fill in only the sections marked with ★. The remaining sections would produce elaboration, not insight. Use them only if the creator explicitly requests the full document.
+> **If fewer than 2 CORE decisions are open:** This concept is stable. Skip to ABBREVIATED MODE below — fill in only the sections marked with ★. The remaining sections would produce elaboration, not insight. Use them only if the creator explicitly requests the full document. (A concept can have many SURFACE decisions open and still be stable — don't let unresolved polish questions trigger full mode.)
 >
-> **If 4 or more decisions are open:** This concept is fluid. Fill in the FULL DOCUMENT — the schema can shape the trajectory.
+> **If 2 or more CORE decisions are open:** This concept is fluid. Fill in the FULL DOCUMENT — the schema can shape the trajectory.
 
-**Open decisions identified:** [List them]
-**Count:** [N]
+**Open decisions identified:**
+| Decision | Weight | Status |
+|---|---|---|
+| [decision] | [CORE / STRUCTURAL / SURFACE] | [open / decided in seed] |
+
+**CORE decisions open:** [N]
 **Mode:** [ABBREVIATED / FULL]
 
 ---
