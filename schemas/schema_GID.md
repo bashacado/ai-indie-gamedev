@@ -1,12 +1,34 @@
-# Game Idea Document — Schema
-> **When responding, remove these blockquoted instructions and return only the filled-in sections. If a section doesn't apply to your game, write "N/A" and briefly say why. Don't leave sections blank — a deliberate "N/A" is more useful than an empty heading.** 
+# Game Idea Document — Schema v2
+
+> **When responding, remove these blockquoted instructions and return only the filled-in sections. If a section doesn't apply to your game, write "N/A" and briefly say why. Don't leave sections blank — a deliberate "N/A" is more useful than an empty heading.**
+
 > **Hard constraints — these color every answer below:**
 > - Solo dev budget: ~365 hours/year
 > - Deploy on Windows (Steam) and/or iOS (iPhone/tablet). No consoles.
 > - No photorealistic art. No side-scrollers. 3D preferred.
 > - Multiplayer only if local (zero maintenance cost post-release).
 > - Be blunt. I'd rather hear "this idea doesn't work because X" than a polished document for a doomed project.
+
+> **Anti-padding rule:** If the seed document already contains a clear decision for a section, do not restate it at greater length. Write "Decided in seed: [one-line summary]" and move on. Your job is to stress-test, surface unknowns, and make decisions that haven't been made yet — not to elaborate on decisions that have. If you find yourself writing a paragraph that the seed author could have predicted word-for-word, stop and delete it.
+
 ---
+
+## Pre-Mortem (COMPLETE THIS FIRST)
+
+> Before filling in ANY other section, write the pre-mortem. This forces you to confront the concept's weaknesses before you've invested effort defending it.
+>
+> Imagine it is one year from now. You spent 300+ hours on this game. It failed. Write 3 plausible reasons why, in order of likelihood. Be specific — not "it wasn't fun enough" but "the core loop had one verb (collect) with no variation, and playtesters stopped engaging after 8 minutes."
+>
+> Then: for each failure reason, state whether the current seed/design addresses it, partially addresses it, or ignores it entirely.
+>
+> If all three failure reasons are things the design ignores, this is a serious warning sign. Consider whether to proceed.
+
+1. **[Most likely failure reason]** — [Specific and concrete]. *Addressed by current design?* [Yes / Partially / No — explain.]
+2. **[Second failure reason]** — [Specific]. *Addressed?* [Yes / Partially / No.]
+3. **[Third failure reason]** — [Specific]. *Addressed?* [Yes / Partially / No.]
+
+---
+
 ## Genre(s)
 > 1–2 genres. Be specific — "puzzle" is not a genre, "puzzle-exploration" is.
 
@@ -42,6 +64,19 @@
 1. **Replayability mechanism:** [How does the player get value from a second session? If "they don't," say so — that's a valid answer for some designs.]
 2. **Minimum content to ship:** [Quantify: number of levels, rooms, encounters, systems.]
 3. **Procedural vs. authored:** [Is content procedural, hand-authored, or hybrid? State the strategy and its risks.]
+
+### Mechanical Depth Check
+> Count the distinct verbs the player performs in the core loop. A "verb" is a discrete player action with its own input and feedback (e.g., "move," "collect," "aim," "build," "choose").
+>
+> - **1 verb:** The game is a single-mechanic experience. This can work (e.g., Flappy Bird, Desert Golfing) but it means ALL engagement comes from content variety, audiovisual polish, or escalating challenge. State which of these you're relying on.
+> - **2 verbs:** Typical for casual/mobile. The interaction between the two verbs IS the game. State what that interaction is.
+> - **3+ verbs:** Typical for mid-core+. Each verb must earn its place. If any verb could be removed without breaking the loop, cut it.
+>
+> If your verb count is 1 and your session target exceeds 5 minutes, this is a structural risk. Acknowledge it.
+
+**Verb count:** [N]
+**Player verbs:** [List them]
+**If 1 verb:** [What sustains engagement? Content variety, escalating challenge, audiovisual spectacle, or something else?]
 
 ## Session Design
 > Fill in all four:
@@ -170,3 +205,18 @@
 
 1. **[Milestone/trigger]** → [Decision: pivot, cut, or abandon]
 2. **[Milestone/trigger]** → [Decision]
+
+---
+
+## Open Decisions
+
+> List 2–5 design questions that this document does NOT answer — decisions that require prototyping, playtesting, or market research to resolve. For each, state what information you need and when in the phase plan you'll get it.
+>
+> If you cannot identify any open decisions, the document is either remarkably complete or the AI is not thinking hard enough. Recheck.
+
+1. **[Decision]** — [What you need to know, and when/how you'll learn it]
+2. **[Decision]** — [Info needed, timing]
+
+## Honest Assessment
+
+> In 2–4 sentences, state your honest opinion of this game's commercial viability and creative merit. Do not hedge with "it depends on execution" — everything depends on execution. State whether you think this is a good use of 365 hours, and why or why not. If you think the concept should be abandoned or substantially rethought, say so here.

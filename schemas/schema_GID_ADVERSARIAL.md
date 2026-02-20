@@ -1,4 +1,4 @@
-# GID Adversarial Review — Schema
+# GID Adversarial Review — Schema v2
 
 ---
 
@@ -20,6 +20,11 @@ Write like you're explaining your findings to a colleague over coffee — plain 
 - Let clean sections be short, but let real findings breathe
 
 The tagging system ([INTERNAL], [EXTERNAL]) is structural scaffolding. Your prose between the tags should read like a person talking, not a form being filled in.
+
+### Anti-Politeness Rule
+Your job is to find problems. A review that says "No issues found. Good to go!" on most sections has failed — it means either the document is exceptionally strong or (more likely) you are being too agreeable.
+
+Before finalizing, count your "No issues found" verdicts. If more than 40% of checkable sections are clean, re-examine the three largest sections and ask yourself: "Am I saying this is fine because it IS fine, or because the document is internally consistent in a way that makes it hard to attack?" Internal consistency is necessary but not sufficient. A perfectly coherent document describing a game nobody would buy is still a problem.
 
 ### No Web Searching
 Do not search the web, fetch URLs, or access any external data during this review unless the user explicitly gives permission. Your review should be based entirely on the contents of the GID provided.
@@ -46,6 +51,8 @@ If a section contains no real issues, write:
 
 Do not invent speculative tensions. Do not pad sections. An empty section is a valid and useful finding. A manufactured concern is noise.
 
+But re-read the Anti-Politeness Rule above.
+
 ### Observations Only (Default)
 Present all findings as **observations**, not prescriptions. Do not tell the creator what to do — tell them what you found.
 
@@ -60,6 +67,17 @@ Review only what the document claims. Do not critique the creator's skill, motiv
 - **[INTERNAL]** means the document contradicts or undermines itself — something inside the GID doesn't line up.
 - **[EXTERNAL]** means the reviewer is bringing in an outside assumption (market trends, genre norms, production estimates). Take these seriously but know they're not proven — they're informed guesses.
 - **"No issues"** means the reviewer looked and the section is clean. That's a good result, not a skipped section.
+
+---
+
+## Pre-Mortem Audit
+
+> If the GID contains a Pre-Mortem section, evaluate:
+> 1. Are the failure reasons specific enough to act on, or are they generic risks that apply to any game?
+> 2. Does the rest of the document actually address the failure reasons identified, or does it proceed as if they don't exist?
+> 3. Are there plausible failure modes the pre-mortem missed?
+>
+> If the GID does not contain a Pre-Mortem, write one yourself: state the 2–3 most likely reasons this specific game fails, and whether the document addresses them.
 
 ---
 
@@ -89,6 +107,20 @@ Check whether the stated audience aligns with the stated platforms. Flag structu
 Check whether the pitch promises something the pillars and mechanics can deliver.
 
 If the pitch implies a frequency, scale, or spectacle level that the document does not specify, flag the gap as **[INTERNAL]** — the document is making an unquantified promise.
+
+---
+
+## Mechanical Depth Probe
+
+> This section exists because internally-consistent documents can still describe games that are too shallow to sustain engagement.
+
+Count the distinct player verbs in the core loop. Then answer:
+
+1. **Repetition tolerance:** Given the verb count and session design, how many times will the player perform the exact same action sequence before completing the game? State the number. If it exceeds 50 repetitions of an identical sequence, flag this as a risk with the consequence (engagement decay, refund requests, negative reviews citing repetition).
+
+2. **Escalation or variation:** Does the document describe any mechanism that changes what the player does over time (new mechanics unlocked, increasing challenge, environmental variation, narrative beats)? If yes, is it specified concretely or hand-waved? If no, the game is relying entirely on content variety and polish to sustain interest — state this explicitly.
+
+3. **The "Minute 30" question:** Describe what the player is doing 30 minutes into the game, based only on what the document specifies. Is it meaningfully different from minute 3? If not, flag as **[INTERNAL]** — the document describes a game that front-loads its appeal.
 
 ---
 
@@ -126,6 +158,22 @@ Then answer:
 Tag your assessment: **[INTERNAL]** if the document describes the moment but under-specifies its impact, **[EXTERNAL]** if you're importing expectations from comparable titles.
 
 Do not prescribe marketing strategy. Observe whether the document contains the raw material for a compelling moment.
+
+---
+
+## Commercial Viability Probe
+
+> This section exists because both the GID author and the GID reviewer can fall into the trap of evaluating only structural coherence while ignoring whether anyone would actually buy the result.
+
+Answer these questions. Tag each as [EXTERNAL] since they require market assumptions.
+
+1. **Comparable sales:** Name 1–3 games in the same genre/audience/price bracket that shipped in the last 3 years. Do you have reason to believe they sold well or poorly? If you don't know, say so — but note that the absence of visible comparables is itself a signal.
+
+2. **Discovery path:** How does a potential buyer find this game? State the most likely discovery channel (App Store search, Steam tags, social media, word of mouth, press coverage). Does the document's marketing-critical asset actually work in that channel?
+
+3. **Purchase objection:** State the single most likely reason a person in the target audience sees this game and decides NOT to buy it. Does the document address this objection?
+
+If you do not have permission to web search, base your answers on general market knowledge and state your uncertainty explicitly.
 
 ---
 
@@ -191,11 +239,17 @@ If the GID does not contain kill criteria, note their absence and identify 1–2
 
 ---
 
+## Open Decisions Audit
+
+> If the GID contains an Open Decisions section, evaluate whether the listed decisions are genuine unknowns or obvious choices being deferred. If the GID does not contain this section, identify 2–3 decisions that have been implicitly made without justification — choices the document treats as settled that actually deserve scrutiny.
+
+---
+
 ## Verdict
 
 Rate the GID: **GREEN**, **YELLOW**, or **RED**.
 
-- **GREEN:** Internally consistent, risks are identified and mitigated, pillars are exercised in the loop, scope is plausible. Ready to prototype.
+- **GREEN:** Internally consistent, risks are identified and mitigated, pillars are exercised in the loop, scope is plausible, and there is a credible path to commercial viability or the creator has explicitly accepted low commercial odds. Ready to prototype.
 - **YELLOW:** Viable concept with specific, identifiable gaps. List exactly what must change and why. Do not list more than 5 items.
 - **RED:** Structural incoherence — the pillars, loop, scope, or audience are in fundamental conflict. The concept needs rethinking before prototyping.
 
