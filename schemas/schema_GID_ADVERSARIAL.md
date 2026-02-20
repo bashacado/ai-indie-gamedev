@@ -174,6 +174,9 @@ Tag your assessment: **[INTERNAL]** if the document describes the moment but und
 
 Do not prescribe marketing strategy. Observe whether the document contains the raw material for a compelling moment.
 
+### Differentiation Check
+If the GID names reference games or comparable titles, describe one specific way this game meaningfully differentiates itself from the three most similar games named. If differentiation is unclear or amounts to a minor twist on an existing formula, state that plainly — the consequence is that the game may struggle for attention in a crowded discovery environment regardless of execution quality.
+
 ---
 
 ## Commercial Viability Probe

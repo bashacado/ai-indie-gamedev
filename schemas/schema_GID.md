@@ -18,8 +18,8 @@
 > Count the major design decisions that are still genuinely open — meaning the seed has NOT already committed to a specific answer. A decision is "open" if the seed either doesn't mention it, explicitly defers it, or presents multiple options without choosing.
 >
 > For each open decision, classify its weight:
-> - **CORE** — mechanic, loop, monetization, target audience. These define what the game IS.
-> - **STRUCTURAL** — progression system, level/world structure, platform priority, session structure, input scheme. These define how the game is built.
+> - **CORE** — mechanic, loop, monetization, target audience. These define what the game IS. A decision is CORE only if changing it would change what the player DOES, not how the game looks, sounds, or is packaged. "Exact price point" is STRUCTURAL, not CORE. "Joystick vs. tap-to-move" is STRUCTURAL, not CORE.
+> - **STRUCTURAL** — progression system, level/world structure, platform priority, session structure, input scheme, pricing specifics. These define how the game is built and delivered.
 > - **SURFACE** — art style, audio tone, UI approach, narrative framing. These define how the game feels but not what it is.
 >
 > **If fewer than 2 CORE decisions are open:** This concept is stable. Skip to ABBREVIATED MODE below — fill in only the sections marked with ★. The remaining sections would produce elaboration, not insight. Use them only if the creator explicitly requests the full document. (A concept can have many SURFACE decisions open and still be stable — don't let unresolved polish questions trigger full mode.)
