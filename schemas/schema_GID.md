@@ -36,6 +36,43 @@
 
 ---
 
+## Direction Lock (FULL MODE only — skip if ABBREVIATED)
+
+> This section fires when the mode is FULL **and** the seed lacks mechanically specific, falsifiable pillars. A pillar is "mechanically specific" if it describes a concrete player-facing behavior or system rule that could be tested in a prototype — not a quality aspiration ("tight controls"), genre label ("immersive exploration"), or feeling ("tense atmosphere"). If the seed already contains 3+ pillars that meet this bar, write "Pillars locked in seed" and proceed to the Pre-Mortem.
+>
+> **Why this exists:** Without direction locking, the AI invents pillars, exclusions, and mechanical identity on behalf of the creator — then builds the entire GID on top of those assumptions. If the creator disagrees with the foundation, the whole document is waste. This step forces a deliberate choice before commitment.
+>
+> **Process:**
+> 1. Generate **3–4 sharply distinct direction sets.** Each set contains:
+>    - **3 pillars** — mechanically specific, each implying a different player behavior or system rule. Write them the same way they'd appear in the Pillars section: a name and a mechanism sentence.
+>    - **1–2 deliberate exclusions** — features the target audience would expect that this direction cuts. Frame each as a design choice with a stated tradeoff, not a budget compromise.
+>    - **Implied identity** — one sentence describing what kind of game this direction produces. What does a play session feel like?
+>
+> 2. **Each direction set must imply a different mechanical identity.** If two sets would produce the same moment-to-moment gameplay, they are not distinct — merge or replace one. Vary along axes that change what the player *does*, not how the game looks or sounds.
+>
+> 3. **Do not proceed until the creator selects or modifies one direction.** The creator may:
+>    - Pick a set as-is.
+>    - Combine elements from multiple sets (but must accept the tradeoff consequences).
+>    - Reject all sets and provide their own pillars.
+>
+> 4. **Lock the selected direction.** The chosen pillars and exclusions become constraints for the rest of the GID. The Pillars and Scope Limitations sections should reflect the locked direction — do not re-derive them from scratch.
+
+**Pillar status:** [Locked in seed / Direction Lock required]
+
+> If Direction Lock required, present the direction sets here. Stop and wait for selection before continuing.
+
+| | Direction A | Direction B | Direction C | Direction D (optional) |
+|---|---|---|---|---|
+| **Pillar 1** | [mechanism] | [mechanism] | [mechanism] | [mechanism] |
+| **Pillar 2** | [mechanism] | [mechanism] | [mechanism] | [mechanism] |
+| **Pillar 3** | [mechanism] | [mechanism] | [mechanism] | [mechanism] |
+| **Exclusion(s)** | [cut + tradeoff] | [cut + tradeoff] | [cut + tradeoff] | [cut + tradeoff] |
+| **Implied identity** | [one sentence] | [one sentence] | [one sentence] | [one sentence] |
+
+**Selected direction:** [A / B / C / D / hybrid — specify]
+
+---
+
 ### ★ ABBREVIATED MODE (stable concepts only)
 
 > Complete only these sections. Everything else is elaboration on settled decisions.
@@ -81,6 +118,7 @@
 > I should be able to point at any feature and say which pillar it serves — or cut the feature.
 > Bad: "Engaging combat." Good: "Every enemy has a telegraphed pattern the player can learn to parry."
 > For any pillar that involves a cost, constraint, or restriction on the player: state the specific mechanism. What is gained? What is lost? How is it enforced?
+> **If a Direction Lock was completed above, carry the selected pillars forward here.** Refine wording if needed, but do not replace the locked direction's identity.
 1. **[Pillar]** — [Mechanism: how this works in practice, not just what it aspires to]
 2. **[Pillar]** — [Mechanism]
 3. **[Pillar]** — [Mechanism]
@@ -88,6 +126,7 @@
 ## Scope Limitations
 > List 2–3 features your target audience would EXPECT this game to have, that you're choosing to cut anyway. For each, name what you gain from the cut (time, focus, simplicity). Cutting things nobody expected doesn't count.
 > Frame each as a design choice, not a budget compromise. What does cutting this force you to do instead?
+> **If a Direction Lock was completed above, carry the selected exclusions forward here.** Expand on tradeoffs if needed, but do not reintroduce excluded features without the creator's approval.
 - **No [feature]** — [What players expect and why you're not doing it. What does cutting this force you to do instead?]
 
 ## Core Loop
