@@ -269,6 +269,29 @@ State your confidence in the verdict: **HIGH** (based primarily on [INTERNAL] fi
 
 ---
 
+## Resolution Pass (YELLOW and RED verdicts only)
+
+> If the verdict is GREEN, skip this section entirely — the document is ready to prototype and does not need speculative fixes.
+>
+> If the verdict is YELLOW or RED, this section is mandatory. The adversarial review has identified specific gaps. Now close the loop: for each gap listed in the verdict, propose one concrete fix.
+>
+> Rules:
+> - **One fix per gap.** Do not offer menus of options. Pick the fix you believe is strongest and defend it in 2–3 sentences.
+> - **Fixes must be actionable within the document's own constraints** (solo dev budget, stated tools, target platforms). A fix that requires a new team member, a new engine, or a new genre is not a fix — it's a pivot. If you believe a pivot is warranted, say so explicitly and explain why a scoped fix is insufficient.
+> - **Each fix must state what it costs.** Hours, scope, complexity, or risk. A free fix is almost certainly vague.
+> - **Fixes are proposals, not mandates.** The creator decides whether to adopt them. But unlike the observations-only default in the rest of the review, this section is explicitly prescriptive — you are being asked to solve, not just diagnose.
+> - **Tag each fix [INTERNAL] or [EXTERNAL]** to indicate whether the fix addresses a structural gap in the document or a market/genre concern imported from outside it.
+> - **If you cannot propose a concrete fix for a gap**, write: "No scoped fix available — this gap likely requires prototyping to resolve." That is an honest and useful answer.
+
+| # | Gap (from Verdict) | Proposed Fix | Cost | Tag |
+|---|---|---|---|---|
+| 1 | [gap] | [concrete fix in 2–3 sentences] | [hours, scope impact, or risk introduced] | [INTERNAL / EXTERNAL] |
+| 2 | [gap] | [fix] | [cost] | [tag] |
+
+> After completing the table, write one paragraph assessing whether the fixes collectively change the verdict. If all fixes are adopted, does the concept move from YELLOW to GREEN (or RED to YELLOW)? If not, what remains unresolved and why?
+
+---
+
 ## Self-Retraction Pass
 
 Review every criticism and risk you raised in this document. For each, answer:
@@ -276,5 +299,6 @@ Review every criticism and risk you raised in this document. For each, answer:
 1. **Would this concern still hold if the creator had strong execution?** If no, it is an execution-dependent concern, not a structural one. Downgrade it or note the dependency.
 2. **Did I generate this concern because the template section demanded content, or because the document warranted it?** If the former, retract it.
 3. **Which of my findings am I most confident in, and which am I least confident in?** State both explicitly.
+4. **If a Resolution Pass was completed:** Review each proposed fix. Is any fix worse than the problem it solves — introducing more risk, scope, or complexity than the original gap? Flag any fix you would retract or downgrade on reflection.
 
 List any retracted or downgraded items here. If none, write: **All findings sustained.**
