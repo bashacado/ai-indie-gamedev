@@ -118,11 +118,10 @@
 **If 1 verb:** [What sustains engagement? Content variety, escalating challenge, audiovisual spectacle, or something else?]
 
 ## Session Design
-> Fill in all four:
+> Fill in all three:
 - **Target session length:** [X–Y minutes. What does one "unit" of play look like?]
 - **Target total player engagement:** [X–Y hours first playthrough; X–Y for replay if applicable]
 - **What makes the player stop AND want to come back?** [Stop trigger and return hook — be specific]
-- **Why does this match monetization?** [Connect session design to how you're charging]
 
 ## Save System Philosophy
 > This is a design decision, not a technical one.
@@ -151,6 +150,7 @@
 
 ## Monetization Model
 > Premium, F2P, subscription, ad-supported, etc. Price point. Platform-specific pricing if different. IAP/DLC plans or explicit lack thereof. This constrains design heavily, especially across Steam + iOS.
+> Why does this match session design? [Connect how you're charging to how the player plays — session length, total playtime, and return hooks should reinforce the model, not fight it.]
 
 ---
 

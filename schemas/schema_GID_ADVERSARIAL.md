@@ -174,9 +174,6 @@ Tag your assessment: **[INTERNAL]** if the document describes the moment but und
 
 Do not prescribe marketing strategy. Observe whether the document contains the raw material for a compelling moment.
 
-### Differentiation Check
-If the GID names reference games or comparable titles, describe one specific way this game meaningfully differentiates itself from the three most similar games named. If differentiation is unclear or amounts to a minor twist on an existing formula, state that plainly — the consequence is that the game may struggle for attention in a crowded discovery environment regardless of execution quality.
-
 ---
 
 ## Commercial Viability Probe
@@ -185,11 +182,9 @@ If the GID names reference games or comparable titles, describe one specific way
 
 Answer these questions. Tag each as [EXTERNAL] since they require market assumptions.
 
-1. **Comparable sales:** Name 1–3 games in the same genre/audience/price bracket that shipped in the last 3 years. Do you have reason to believe they sold well or poorly? If you don't know, say so — but note that the absence of visible comparables is itself a signal.
+1. **Discovery path:** How does a potential buyer find this game? State the most likely discovery channel (App Store search, Steam tags, social media, word of mouth, press coverage). Does the document's marketing-critical asset actually work in that channel?
 
-2. **Discovery path:** How does a potential buyer find this game? State the most likely discovery channel (App Store search, Steam tags, social media, word of mouth, press coverage). Does the document's marketing-critical asset actually work in that channel?
-
-3. **Purchase objection:** State the single most likely reason a person in the target audience sees this game and decides NOT to buy it. Does the document address this objection?
+2. **Purchase objection:** State the single most likely reason a person in the target audience sees this game and decides NOT to buy it. Does the document address this objection?
 
 If you do not have permission to web search, base your answers on general market knowledge and state your uncertainty explicitly.
 
@@ -221,11 +216,10 @@ Describe the smallest possible version of this game that still satisfies the Non
 
 ## The Graveyard Question
 
-Name 1–3 comparable titles that attempted something similar and either failed or struggled.
-
-For each:
-- What specifically went wrong?
-- Does this GID address that failure explicitly, implicitly, or not at all?
+Name 1–3 comparable titles in the same genre/audience/price bracket that shipped in the last 3 years. For each:
+- Did it succeed or fail commercially? If you don't know, say so — but note that the absence of visible comparables is itself a signal.
+- If it failed or struggled, what specifically went wrong? Does this GID address that failure explicitly, implicitly, or not at all?
+- If it succeeded, how does this game meaningfully differentiate itself from it? If differentiation is unclear or amounts to a minor twist on an existing formula, state that plainly — the consequence is that the game may struggle for attention in a crowded discovery environment regardless of execution quality.
 - Tag as **[EXTERNAL]** — you are importing market history.
 
 Do not use the graveyard question to argue the genre is unviable. Use it to identify specific failure modes this design should be aware of.
