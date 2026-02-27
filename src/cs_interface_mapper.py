@@ -782,7 +782,7 @@ def _main():
                   for fi in all_file_infos)
    total_md += os.path.getsize(str(readme_path))
    ratio = (total_md / total_src * 100) if total_src > 0 else 0
-   print(f"Source total: {total_src:,} bytes → Interface maps total: {total_md:,} bytes ({ratio:.1f}%)")
+   print(f"Source total: {total_src:,} bytes -> Interface maps total: {total_md:,} bytes ({ratio:.1f}%)")
 
 
 if __name__ == "__main__":
