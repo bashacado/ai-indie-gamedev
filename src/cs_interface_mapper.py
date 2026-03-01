@@ -15,7 +15,7 @@ Output structure:
 Usage:
    python cs_interface_mapper.py <input_dir> [output_dir]
 
-If output_dir is omitted, defaults to <input_dir>/_interface_maps/
+If output_dir is omitted, defaults to <input_dir>/README.md
 The script produces exactly ONE file: README.md
 """
 
@@ -1084,10 +1084,10 @@ def _main():
    parser = argparse.ArgumentParser(
       description="Generate a single README.md interface map from Unity C# scripts."
    )
-   parser.add_argument("input_dir",
+   parser.add_argument("input_dir", default='.',
                        help="Directory containing .cs files (searched recursively)")
    parser.add_argument("output_dir", nargs="?", default=None,
-                       help="Output directory (default: <input_dir>/_interface_maps/)")
+                       help="Output directory (default: <input_dir>)")
    args = parser.parse_args()
 
    input_dir = Path(args.input_dir).resolve()
@@ -1095,7 +1095,7 @@ def _main():
       print(f"Error: '{input_dir}' is not a directory.")
       sys.exit(1)
 
-   output_dir = Path(args.output_dir) if args.output_dir else input_dir / "_interface_maps"
+   output_dir = Path(args.output_dir) if args.output_dir else input_dir
    output_dir.mkdir(parents=True, exist_ok=True)
 
    # Collect all .cs files
