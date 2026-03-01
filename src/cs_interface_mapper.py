@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
 """
-cs_interface_mapper.py
-Parses Unity C# scripts and produces lightweight .md interface maps.
-Each output file captures the public API surface of a script so an AI
-can know exactly how to interface with it without reading full source.
+cs_interface_mapper.py  v2.0
+Parses Unity C# scripts and produces a SINGLE README.md that gives an AI
+everything it needs to interface with the codebase without reading the source.
+
+Output structure:
+   1. Architecture Contracts  — extracted from top-of-file doc comments
+   2. Runtime Flow            — inferred from lifecycle hooks + call patterns
+   3. Shared Constants        — enums, const fields, static readonly fields
+   4. Dependency Graph         — who depends on whom
+   5. Per-Script Details       — serialized fields, public API with intent
+                                 docstrings, properties, lifecycle hooks
 
 Usage:
    python cs_interface_mapper.py <input_dir> [output_dir]
 
 If output_dir is omitted, defaults to <input_dir>/_interface_maps/
+The script produces exactly ONE file: README.md
 """
 
 import os
@@ -29,14 +37,26 @@ class EnumInfo:
    values: list[str] = field(default_factory=list)
 
 @dataclass
+class ConstInfo:
+   """A const or static readonly field — project-wide shared value."""
+   name: str
+   type_name: str
+   value: str
+   access: str
+   owner_class: str = ""
+
+@dataclass
 class FieldInfo:
    name: str
    type_name: str
    access: str
    is_static: bool = False
    is_readonly: bool = False
+   is_const: bool = False
    is_serialized: bool = False
    default_value: Optional[str] = None
+   header_group: Optional[str] = None
+   tooltip: Optional[str] = None
 
 @dataclass
 class PropertyInfo:
@@ -65,6 +85,7 @@ class MethodInfo:
    is_abstract: bool = False
    is_async: bool = False
    is_coroutine: bool = False
+   doc_summary: Optional[str] = None
 
 @dataclass
 class ClassInfo:
@@ -81,6 +102,7 @@ class ClassInfo:
    methods: list[MethodInfo] = field(default_factory=list)
    enums: list[EnumInfo] = field(default_factory=list)
    nested_classes: list["ClassInfo"] = field(default_factory=list)
+   class_doc: Optional[str] = None
 
 @dataclass
 class FileInfo:
@@ -91,6 +113,9 @@ class FileInfo:
    classes: list[ClassInfo] = field(default_factory=list)
    top_level_enums: list[EnumInfo] = field(default_factory=list)
    project_dependencies: list[str] = field(default_factory=list)
+   file_doc_comment: Optional[str] = None
+   has_editor_guard: bool = False
+   raw_source: str = ""
 
 
 # ── Regex Patterns ───────────────────────────────────────────────────
@@ -104,7 +129,7 @@ _RE_CLASS = re.compile(
    r'(?P<static>static\s+)?'
    r'(?P<partial>partial\s+)?'
    r'(?P<kind>class|struct|interface)\s+'
-   r'(?P<name>\w+)'
+   r'(?P<n>\w+)'
    r'(?:<[^>]+>)?'               # generic params
    r'(?:\s*:\s*(?P<bases>[^{]+?))?'
    r'\s*\{'
@@ -112,7 +137,7 @@ _RE_CLASS = re.compile(
 
 _RE_ENUM = re.compile(
    r'(?P<access>public|private|protected|internal)?\s*'
-   r'enum\s+(?P<name>\w+)\s*(?::\s*\w+\s*)?\{'
+   r'enum\s+(?P<n>\w+)\s*(?::\s*\w+\s*)?\{'
 )
 
 _RE_FIELD = re.compile(
@@ -120,9 +145,10 @@ _RE_FIELD = re.compile(
    r'(?P<attrs>(?:\[[\w\s,()="\.]+\]\s*)*)'
    r'(?P<access>public|private|protected|internal)\s+'
    r'(?P<static>static\s+)?'
+   r'(?P<const>const\s+)?'
    r'(?P<readonly>readonly\s+)?'
    r'(?P<type>[\w<>\[\],\s\?\.]+?)\s+'
-   r'(?P<name>\w+)\s*'
+   r'(?P<n>\w+)\s*'
    r'(?:=\s*(?P<default>[^;]+))?\s*;',
    re.MULTILINE
 )
@@ -132,7 +158,7 @@ _RE_PROPERTY = re.compile(
    r'(?P<access>public|private|protected|internal)\s+'
    r'(?P<static>static\s+)?'
    r'(?P<type>[\w<>\[\],\s\?\.]+?)\s+'
-   r'(?P<name>\w+)\s*\{',
+   r'(?P<n>\w+)\s*\{',
    re.MULTILINE
 )
 
@@ -146,21 +172,23 @@ _RE_METHOD = re.compile(
    r'(?P<abstract>abstract\s+)?'
    r'(?P<async>async\s+)?'
    r'(?P<return>[\w<>\[\],\s\?\.]+?)\s+'
-   r'(?P<name>\w+)\s*'
+   r'(?P<n>\w+)\s*'
    r'(?:<[^>]+>)?\s*'           # generic params
    r'\((?P<params>[^)]*)\)',
    re.MULTILINE
 )
 
 _RE_SERIALIZE_FIELD = re.compile(r'\[SerializeField\]')
-_RE_HEADER = re.compile(r'\[Header\("([^"]+)"\)\]')
-_RE_TOOLTIP = re.compile(r'\[Tooltip\("([^"]+)"\)\]')
+_RE_HEADER = re.compile(r'\[Header\(\s*"([^"]+)"\s*\)\]')
+_RE_TOOLTIP = re.compile(r'\[Tooltip\(\s*"([^"]+)"\s*\)\]')
+_RE_EDITOR_GUARD = re.compile(r'#if\s+UNITY_EDITOR')
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
 def _strip_comments(src: str) -> str:
-   """Remove single-line and multi-line comments."""
+   """Remove single-line and multi-line comments for parsing.
+   Returns the stripped source (used for structural parsing only)."""
    src = re.sub(r'//.*?$', '', src, flags=re.MULTILINE)
    src = re.sub(r'/\*.*?\*/', '', src, flags=re.DOTALL)
    return src
@@ -259,6 +287,153 @@ def _is_unity_lifecycle(name: str) -> bool:
    return name in unity_callbacks
 
 
+def _extract_file_doc(raw_src: str) -> Optional[str]:
+   """Extract the top-of-file doc comment (before any using/namespace).
+
+   Looks for a block comment or consecutive // lines at the very top.
+   This is where architecture contracts and design notes tend to live."""
+   lines = raw_src.lstrip('\ufeff').split('\n')
+   doc_lines = []
+   in_block = False
+
+   for line in lines:
+      stripped = line.strip()
+      # Stop at first code line (using, namespace, attribute, class, etc.)
+      if not in_block and stripped and not stripped.startswith('//') and not stripped.startswith('/*') and not stripped.startswith('*'):
+         break
+      # Block comment
+      if stripped.startswith('/*'):
+         in_block = True
+         content = stripped[2:].lstrip('* ')
+         if content:
+            doc_lines.append(content)
+         if '*/' in stripped:
+            in_block = False
+            if doc_lines:
+               doc_lines[-1] = doc_lines[-1].split('*/')[0].rstrip()
+         continue
+      if in_block:
+         if '*/' in stripped:
+            content = stripped.split('*/')[0].lstrip('* ').rstrip()
+            if content:
+               doc_lines.append(content)
+            in_block = False
+            continue
+         content = stripped.lstrip('* ')
+         doc_lines.append(content)
+         continue
+      # /// lines
+      if stripped.startswith('///'):
+         content = stripped[3:].strip()
+         content = re.sub(r'</?summary>', '', content).strip()
+         if content:
+            doc_lines.append(content)
+         continue
+      # // lines at top of file
+      if stripped.startswith('//'):
+         content = stripped[2:].strip()
+         if content:
+            doc_lines.append(content)
+         continue
+      # Empty lines are fine as separators
+      if not stripped:
+         if doc_lines:
+            doc_lines.append("")
+         continue
+
+   # Trim trailing empty lines
+   while doc_lines and not doc_lines[-1]:
+      doc_lines.pop()
+
+   if not doc_lines:
+      return None
+
+   result = '\n'.join(doc_lines)
+   if len(result) < 20:
+      return None
+   return result
+
+
+def _extract_doc_for_member(raw_src: str, member_name: str) -> Optional[str]:
+   """Extract the /// or /** doc comment immediately preceding a member.
+
+   Strategy: find the declaration line containing the member name,
+   then walk backwards to collect /// or /** comment lines.
+   Returns a single cleaned-up summary string, or None."""
+   # Find declaration lines containing this member name as a whole word
+   decl_pattern = re.compile(
+      r'^[ \t]*(?:\[.*?\]\s*)*'
+      r'(?:public|private|protected|internal)\s+'
+      r'[^;\n]*?\b' + re.escape(member_name) + r'\b',
+      re.MULTILINE
+   )
+
+   lines = raw_src.split('\n')
+
+   for match in decl_pattern.finditer(raw_src):
+      # Find which line number this declaration is on
+      line_num = raw_src[:match.start()].count('\n')
+
+      # Walk backwards from the line before the declaration
+      # to collect /// or /** comment lines
+      doc_lines = []
+      # Skip attribute lines like [SerializeField], [Header(...)], etc.
+      i = line_num - 1
+      while i >= 0:
+         stripped = lines[i].strip()
+         # Skip blank lines between doc comment and declaration
+         if not stripped:
+            if doc_lines:
+               break  # blank line after doc means we're done
+            i -= 1
+            continue
+         # Skip attribute lines
+         if stripped.startswith('[') and stripped.endswith(']'):
+            i -= 1
+            continue
+         # Collect /// lines
+         if stripped.startswith('///'):
+            content = stripped[3:].strip()
+            content = re.sub(r'</?summary>', '', content).strip()
+            content = re.sub(r'</?remarks>', '', content).strip()
+            content = re.sub(r'<param\s+name="[^"]*">', '', content).strip()
+            content = re.sub(r'</param>', '', content).strip()
+            content = re.sub(r'</?returns>', '', content).strip()
+            if content:
+               doc_lines.insert(0, content)
+            i -= 1
+            continue
+         # Collect /** ... */ block (single or multi-line)
+         if '*/' in stripped:
+            block_lines = []
+            while i >= 0:
+               line_text = lines[i].strip()
+               block_lines.insert(0, line_text)
+               if '/*' in line_text:
+                  break
+               i -= 1
+            block_text = ' '.join(block_lines)
+            # Strip /** and */
+            block_text = re.sub(r'/\*\*?', '', block_text)
+            block_text = re.sub(r'\*/', '', block_text)
+            block_text = block_text.strip().strip('* ').strip()
+            if block_text:
+               doc_lines.insert(0, block_text)
+            break
+         # Not a comment or attribute — stop
+         break
+
+      if doc_lines:
+         return ' '.join(doc_lines)
+
+   return None
+
+
+def _extract_class_doc(raw_src: str, class_name: str) -> Optional[str]:
+   """Extract doc comment for a class/struct/interface declaration."""
+   return _extract_doc_for_member(raw_src, class_name)
+
+
 # ── Parser ───────────────────────────────────────────────────────────
 
 def _parse_file(filepath: str) -> FileInfo:
@@ -270,7 +445,14 @@ def _parse_file(filepath: str) -> FileInfo:
    info = FileInfo(
       filepath=filepath,
       filename=os.path.basename(filepath),
+      raw_source=raw_src,
    )
+
+   # File-level doc comment
+   info.file_doc_comment = _extract_file_doc(raw_src)
+
+   # Editor guard detection
+   info.has_editor_guard = bool(_RE_EDITOR_GUARD.search(raw_src))
 
    # Usings
    info.usings = _RE_USING.findall(src)
@@ -280,15 +462,14 @@ def _parse_file(filepath: str) -> FileInfo:
    if ns_match:
       info.namespace = ns_match.group(1)
 
-   # Top-level enums — only those NOT inside a class block
-   # Find the position of first class/struct/interface opening brace
+   # Top-level enums
    first_class = _RE_CLASS.search(src)
    enum_boundary = first_class.start() if first_class else len(src)
    for m in _RE_ENUM.finditer(src):
       if m.start() >= enum_boundary:
          break
       access = m.group('access') or 'internal'
-      name = m.group('name')
+      name = m.group('n')
       brace_start = m.end() - 1
       block = _extract_brace_block(src, brace_start)
       inner = block[1:-1].strip()
@@ -307,7 +488,6 @@ def _parse_file(filepath: str) -> FileInfo:
       bases_raw = m.group('bases')
       bases = []
       if bases_raw:
-         # Parse base classes respecting generics
          depth = 0
          current = ""
          for ch in bases_raw:
@@ -323,12 +503,11 @@ def _parse_file(filepath: str) -> FileInfo:
                continue
             current += ch
          current = current.strip()
-         # Stop at 'where' constraints
          if current and not current.startswith('where'):
             bases.append(current.split(' where ')[0].strip())
 
       cls = ClassInfo(
-         name=m.group('name'),
+         name=m.group('n'),
          access=m.group('access') or 'internal',
          base_classes=bases,
          is_abstract=bool(m.group('abstract')),
@@ -336,53 +515,74 @@ def _parse_file(filepath: str) -> FileInfo:
          is_partial=bool(m.group('partial')),
          is_struct=(m.group('kind') == 'struct'),
          is_interface=(m.group('kind') == 'interface'),
+         class_doc=_extract_class_doc(raw_src, m.group('n')),
       )
+
+      # Track current [Header] group for serialized field grouping
+      current_header = None
 
       # Fields
       for fm in _RE_FIELD.finditer(inner):
          access = fm.group('access')
          attrs = fm.group('attrs') or ''
          is_serialized = bool(_RE_SERIALIZE_FIELD.search(attrs))
+         is_const = bool(fm.group('const'))
+         is_static = bool(fm.group('static'))
+         is_readonly = bool(fm.group('readonly'))
 
-         # Only track public fields and [SerializeField] private fields
-         if access != 'public' and not is_serialized:
-            continue
-
-         # Skip if this looks like it's inside a method body
-         # (rough heuristic: check if preceded by { at same indent level)
          type_name = fm.group('type').strip()
-
-         # Exclude common false positives
          if type_name in ('return', 'yield', 'var', 'throw', 'new'):
             continue
 
+         # Extract [Header] and [Tooltip] from attributes
+         header_match = _RE_HEADER.search(attrs)
+         if header_match:
+            current_header = header_match.group(1)
+         tooltip_match = _RE_TOOLTIP.search(attrs)
+         tooltip = tooltip_match.group(1) if tooltip_match else None
+
+         # Capture public fields, serialized private fields, AND const/static-readonly
+         should_include = (
+            access == 'public'
+            or is_serialized
+            or (is_const and access in ('public', 'internal'))
+            or (is_static and is_readonly and access in ('public', 'internal'))
+         )
+         if not should_include:
+            continue
+
          cls.fields.append(FieldInfo(
-            name=fm.group('name'),
+            name=fm.group('n'),
             type_name=type_name,
             access=access,
-            is_static=bool(fm.group('static')),
-            is_readonly=bool(fm.group('readonly')),
+            is_static=is_static,
+            is_readonly=is_readonly,
+            is_const=is_const,
             is_serialized=is_serialized,
             default_value=fm.group('default'),
+            header_group=current_header if is_serialized else None,
+            tooltip=tooltip if is_serialized else None,
          ))
 
       # Properties (public only)
       for pm in _RE_PROPERTY.finditer(inner):
          if pm.group('access') != 'public':
             continue
-         prop_name = pm.group('name')
-         # Skip if it collides with a method name (false positive)
+         prop_name = pm.group('n')
          type_name = pm.group('type').strip()
-         if type_name in ('return', 'yield', 'var', 'throw', 'new', 'class', 'enum', 'struct', 'interface', 'event'):
+         if type_name in ('return', 'yield', 'var', 'throw', 'new',
+                          'class', 'enum', 'struct', 'interface', 'event'):
             continue
-         # Skip if this matches an enum or nested class name
          known_type_names = {e.name for e in cls.enums}
          if prop_name in known_type_names:
             continue
-         # Skip lines that are actually type declarations
          line_start = inner.rfind('\n', 0, pm.start()) + 1
          line_text = inner[line_start:pm.end()].strip()
-         if re.match(r'(?:public|private|protected|internal)\s+(?:enum|class|struct|interface)\s+', line_text):
+         if re.match(
+            r'(?:public|private|protected|internal)\s+'
+            r'(?:enum|class|struct|interface)\s+',
+            line_text
+         ):
             continue
 
          brace_start_p = pm.end() - 1
@@ -405,16 +605,15 @@ def _parse_file(filepath: str) -> FileInfo:
             is_static=bool(pm.group('static')),
          ))
 
-      # Methods (public + protected virtual/override/abstract)
+      # Methods
       for mm in _RE_METHOD.finditer(inner):
          access = mm.group('access')
          is_virtual = bool(mm.group('virtual'))
          is_override = bool(mm.group('override'))
          is_abstract = bool(mm.group('abstract'))
-         name = mm.group('name')
+         name = mm.group('n')
          ret = mm.group('return').strip()
 
-         # Skip non-public unless it's a protected virtual/override
          if access == 'private':
             continue
          if access == 'internal' and not (is_virtual or is_override or is_abstract):
@@ -422,8 +621,8 @@ def _parse_file(filepath: str) -> FileInfo:
          if access == 'protected' and not (is_virtual or is_override or is_abstract):
             continue
 
-         # Detect coroutines
          is_coroutine = (ret == 'IEnumerator')
+         doc = _extract_doc_for_member(raw_src, name)
 
          cls.methods.append(MethodInfo(
             name=name,
@@ -436,6 +635,7 @@ def _parse_file(filepath: str) -> FileInfo:
             is_abstract=is_abstract,
             is_async=bool(mm.group('async')),
             is_coroutine=is_coroutine,
+            doc_summary=doc,
          ))
 
       # Nested enums
@@ -443,7 +643,7 @@ def _parse_file(filepath: str) -> FileInfo:
          e_access = em.group('access') or 'internal'
          if e_access not in ('public', 'internal'):
             continue
-         e_name = em.group('name')
+         e_name = em.group('n')
          e_brace = em.end() - 1
          e_block = _extract_brace_block(inner, e_brace)
          e_inner = e_block[1:-1].strip()
@@ -458,6 +658,127 @@ def _parse_file(filepath: str) -> FileInfo:
    return info
 
 
+# ── Dependency Resolution ────────────────────────────────────────────
+
+def _resolve_dependencies(all_files: list[FileInfo], all_filenames: set[str]):
+   """Resolve project-internal dependencies for each file.
+   Mutates each FileInfo.project_dependencies in place."""
+   for fi in all_files:
+      dep_names = set()
+      for cls in fi.classes:
+         # Base classes
+         for b in cls.base_classes:
+            clean = re.sub(r'<.*>', '', b).strip()
+            if f"{clean}.cs" in all_filenames and f"{clean}.cs" != fi.filename:
+               dep_names.add(clean)
+         # Fields
+         for fld in cls.fields:
+            clean = re.sub(r'[\[\]<>,\?\s]', ' ', fld.type_name)
+            for token in clean.split():
+               if f"{token}.cs" in all_filenames and f"{token}.cs" != fi.filename:
+                  dep_names.add(token)
+         # Properties
+         for prop in cls.properties:
+            clean = re.sub(r'[\[\]<>,\?\s]', ' ', prop.type_name)
+            for token in clean.split():
+               if f"{token}.cs" in all_filenames and f"{token}.cs" != fi.filename:
+                  dep_names.add(token)
+         # Method return types and parameters
+         for meth in cls.methods:
+            clean = re.sub(r'[\[\]<>,\?\s]', ' ', meth.return_type)
+            for token in clean.split():
+               if f"{token}.cs" in all_filenames and f"{token}.cs" != fi.filename:
+                  dep_names.add(token)
+            for p in meth.parameters:
+               clean = re.sub(r'[\[\]<>,\?\s]', ' ', p.type_name)
+               for token in clean.split():
+                  if f"{token}.cs" in all_filenames and f"{token}.cs" != fi.filename:
+                     dep_names.add(token)
+      fi.project_dependencies = sorted(dep_names)
+
+
+# ── Runtime Flow Inference ───────────────────────────────────────────
+
+def _infer_runtime_flow(all_files: list[FileInfo]) -> list[str]:
+   """Infer edit-time and play-time execution flow from lifecycle hooks,
+   [MenuItem] attributes, and class hierarchies.
+
+   Returns a list of markdown lines describing the flow."""
+   editor_scripts = []
+   runtime_scripts = []
+
+   for fi in all_files:
+      is_editor = fi.has_editor_guard or any(
+         any(b.strip() in ('Editor', 'EditorWindow', 'AssetPostprocessor')
+             for b in cls.base_classes)
+         for cls in fi.classes
+      )
+      if '[MenuItem' in fi.raw_source or '[InitializeOnLoad' in fi.raw_source:
+         is_editor = True
+
+      for cls in fi.classes:
+         entry = {
+            'file': fi.filename,
+            'class': cls.name,
+            'bases': cls.base_classes,
+            'lifecycle': [],
+            'public_methods': [],
+            'is_editor': is_editor,
+            'doc': cls.class_doc,
+         }
+         for m in cls.methods:
+            if _is_unity_lifecycle(m.name):
+               entry['lifecycle'].append(m.name)
+            if m.access == 'public' and not _is_unity_lifecycle(m.name):
+               entry['public_methods'].append(m.name)
+
+         if is_editor:
+            editor_scripts.append(entry)
+         else:
+            runtime_scripts.append(entry)
+
+   flow_lines = []
+
+   if editor_scripts:
+      flow_lines.append("**Edit-time (Editor scripts):**")
+      for e in editor_scripts:
+         methods = ', '.join(f'`{m}`' for m in e['public_methods']) if e['public_methods'] else '*(no public API)*'
+         base_str = f" : {', '.join(e['bases'])}" if e['bases'] else ""
+         line = f"- `{e['class']}`{base_str} — {methods}"
+         if e['doc']:
+            line += f"  — *{e['doc'][:80]}*"
+         flow_lines.append(line)
+
+   if runtime_scripts:
+      if editor_scripts:
+         flow_lines.append("")
+      flow_lines.append("**Play-time (Runtime scripts):**")
+
+      # Sort: Awake/Start first, then Update-family, then the rest
+      def _lifecycle_order(entry):
+         hooks = entry['lifecycle']
+         if 'Awake' in hooks:
+            return 0
+         if 'Start' in hooks:
+            return 1
+         if 'OnEnable' in hooks:
+            return 2
+         if any(h in hooks for h in ('Update', 'FixedUpdate', 'LateUpdate')):
+            return 3
+         return 4
+
+      for e in sorted(runtime_scripts, key=_lifecycle_order):
+         hooks = ', '.join(f'`{h}`' for h in e['lifecycle']) if e['lifecycle'] else '*(no lifecycle)*'
+         methods = ', '.join(f'`{m}`' for m in e['public_methods']) if e['public_methods'] else ''
+         base_str = f" : {', '.join(e['bases'])}" if e['bases'] else ""
+         parts = [f"hooks: {hooks}"]
+         if methods:
+            parts.append(f"API: {methods}")
+         flow_lines.append(f"- `{e['class']}`{base_str} — {'; '.join(parts)}")
+
+   return flow_lines
+
+
 # ── Markdown Generation ──────────────────────────────────────────────
 
 def _format_param(p: ParameterInfo) -> str:
@@ -467,259 +788,292 @@ def _format_param(p: ParameterInfo) -> str:
    return s
 
 
-def _generate_file_md(info: FileInfo, all_filenames: set[str]) -> str:
-   """Generate markdown interface map for one file."""
+def _generate_class_section(cls: ClassInfo, fi: FileInfo) -> list[str]:
+   """Generate the detailed per-class section for the README."""
    lines = []
-   lines.append(f"# {info.filename}")
+
+   kind = "interface" if cls.is_interface else ("struct" if cls.is_struct else "class")
+   mods = []
+   if cls.is_abstract:
+      mods.append("abstract")
+   if cls.is_static:
+      mods.append("static")
+   if cls.is_partial:
+      mods.append("partial")
+
+   header = f"#### {''.join(m + ' ' for m in mods)}{kind} `{cls.name}`"
+   if cls.base_classes:
+      header += f" : {', '.join(f'`{b}`' for b in cls.base_classes)}"
+   lines.append(header)
+
+   if cls.class_doc:
+      # Collapse multi-line doc to single blockquote
+      doc_oneline = ' '.join(cls.class_doc.split('\n')).strip()
+      lines.append(f"> {doc_oneline}")
    lines.append("")
 
-   if info.namespace:
-      lines.append(f"**Namespace:** `{info.namespace}`")
+   # Nested enums
+   for enum in cls.enums:
+      lines.append(f"**enum `{enum.name}`:** {', '.join(f'`{v}`' for v in enum.values)}")
       lines.append("")
 
-   # Dependencies on other project files
-   # We infer these from type references in fields, bases, params
-   dep_names = set()
-   for cls in info.classes:
-      for b in cls.base_classes:
-         clean = re.sub(r'<.*>', '', b).strip()
-         if f"{clean}.cs" in all_filenames and f"{clean}.cs" != info.filename:
-            dep_names.add(clean)
-      for fld in cls.fields:
-         clean = re.sub(r'[\[\]<>,\?\s]', ' ', fld.type_name)
-         for token in clean.split():
-            if f"{token}.cs" in all_filenames and f"{token}.cs" != info.filename:
-               dep_names.add(token)
-      for prop in cls.properties:
-         clean = re.sub(r'[\[\]<>,\?\s]', ' ', prop.type_name)
-         for token in clean.split():
-            if f"{token}.cs" in all_filenames and f"{token}.cs" != info.filename:
-               dep_names.add(token)
-      for meth in cls.methods:
-         clean = re.sub(r'[\[\]<>,\?\s]', ' ', meth.return_type)
-         for token in clean.split():
-            if f"{token}.cs" in all_filenames and f"{token}.cs" != info.filename:
-               dep_names.add(token)
-         for p in meth.parameters:
-            clean = re.sub(r'[\[\]<>,\?\s]', ' ', p.type_name)
-            for token in clean.split():
-               if f"{token}.cs" in all_filenames and f"{token}.cs" != info.filename:
-                  dep_names.add(token)
-
-   info.project_dependencies = sorted(dep_names)
-
-   if info.project_dependencies:
-      lines.append(f"**Depends on:** {', '.join(f'`{d}`' for d in info.project_dependencies)}")
+   # Serialized fields (grouped by [Header] if present)
+   serialized = [f for f in cls.fields if f.is_serialized and f.access != 'public']
+   if serialized:
+      lines.append("**Serialized Fields (Inspector):**")
+      current_group = None
+      for fld in serialized:
+         if fld.header_group and fld.header_group != current_group:
+            current_group = fld.header_group
+            lines.append(f"  *— {current_group} —*")
+         notes = []
+         if fld.default_value:
+            notes.append(f"= `{fld.default_value.strip()}`")
+         if fld.tooltip:
+            notes.append(f'"{fld.tooltip}"')
+         note_str = f"  {' '.join(notes)}" if notes else ""
+         lines.append(f"- `{fld.type_name}` **{fld.name}**{note_str}")
       lines.append("")
 
-   # Top-level enums
-   for enum in info.top_level_enums:
-      lines.append(f"## enum `{enum.name}`")
-      lines.append(f"Values: {', '.join(f'`{v}`' for v in enum.values)}")
+   # Public fields (non-const, non-static-readonly — those go in Constants)
+   public_fields = [f for f in cls.fields
+                    if f.access == 'public' and not f.is_const
+                    and not (f.is_static and f.is_readonly)]
+   if public_fields:
+      lines.append("**Public Fields:**")
+      for fld in public_fields:
+         notes = []
+         if fld.is_static:
+            notes.append("static")
+         if fld.is_readonly:
+            notes.append("readonly")
+         if fld.default_value:
+            notes.append(f"= `{fld.default_value.strip()}`")
+         note_str = f"  ({', '.join(notes)})" if notes else ""
+         lines.append(f"- `{fld.type_name}` **{fld.name}**{note_str}")
       lines.append("")
 
-   # Classes
-   for cls in info.classes:
-      kind = "interface" if cls.is_interface else ("struct" if cls.is_struct else "class")
-      mods = []
-      if cls.is_abstract:
-         mods.append("abstract")
-      if cls.is_static:
-         mods.append("static")
-      if cls.is_partial:
-         mods.append("partial")
-
-      header = f"## {cls.access} {''.join(m + ' ' for m in mods)}{kind} `{cls.name}`"
-      if cls.base_classes:
-         header += f" : {', '.join(f'`{b}`' for b in cls.base_classes)}"
-      lines.append(header)
+   # Properties
+   public_props = [p for p in cls.properties if p.access == 'public']
+   if public_props:
+      lines.append("**Properties:**")
+      for prop in public_props:
+         access_parts = []
+         if prop.has_getter:
+            access_parts.append("get")
+         if prop.has_setter:
+            access_parts.append("set")
+         access_str = "/".join(access_parts) if access_parts else "?"
+         static_str = " static" if prop.is_static else ""
+         lines.append(f"- `{prop.type_name}` **{prop.name}** {{ {access_str} }}{static_str}")
       lines.append("")
 
-      # Nested enums
-      for enum in cls.enums:
-         lines.append(f"### enum `{enum.name}`")
-         lines.append(f"Values: {', '.join(f'`{v}`' for v in enum.values)}")
-         lines.append("")
+   # Unity lifecycle hooks
+   is_unity_class = any(
+      b.strip() in ('MonoBehaviour', 'NetworkBehaviour', 'ScriptableObject',
+                     'Editor', 'EditorWindow')
+      for b in cls.base_classes
+   )
+   lifecycle = [m for m in cls.methods
+                if is_unity_class and _is_unity_lifecycle(m.name)]
+   if lifecycle:
+      lines.append(f"**Lifecycle:** `{'`, `'.join(m.name for m in lifecycle)}`")
+      lines.append("")
 
-      # Fields
-      public_fields = [f for f in cls.fields if f.access == 'public']
-      serialized_fields = [f for f in cls.fields if f.is_serialized and f.access != 'public']
+   # Public methods
+   public_api = [m for m in cls.methods
+                 if m.access == 'public'
+                 and not (is_unity_class and _is_unity_lifecycle(m.name))]
+   if public_api:
+      lines.append("**Public Methods:**")
+      for meth in public_api:
+         mods = []
+         if meth.is_static:
+            mods.append("static")
+         if meth.is_async:
+            mods.append("async")
+         if meth.is_coroutine:
+            mods.append("coroutine")
+         if meth.is_virtual:
+            mods.append("virtual")
+         if meth.is_override:
+            mods.append("override")
 
-      if public_fields:
-         lines.append("### Public Fields")
-         lines.append("| Type | Name | Notes |")
-         lines.append("|------|------|-------|")
-         for fld in public_fields:
-            notes = []
-            if fld.is_static:
-               notes.append("static")
-            if fld.is_readonly:
-               notes.append("readonly")
-            if fld.default_value:
-               notes.append(f"= {fld.default_value.strip()}")
-            lines.append(f"| `{fld.type_name}` | `{fld.name}` | {', '.join(notes)} |")
-         lines.append("")
+         params_str = ", ".join(_format_param(p) for p in meth.parameters)
+         mod_str = f" *[{', '.join(mods)}]*" if mods else ""
+         sig = f"- `{meth.return_type} {meth.name}({params_str})`{mod_str}"
+         if meth.doc_summary:
+            sig += f"  — {meth.doc_summary}"
+         lines.append(sig)
+      lines.append("")
 
-      if serialized_fields:
-         lines.append("### Serialized Fields (Inspector)")
-         lines.append("| Type | Name | Notes |")
-         lines.append("|------|------|-------|")
-         for fld in serialized_fields:
-            notes = []
-            if fld.default_value:
-               notes.append(f"= {fld.default_value.strip()}")
-            lines.append(f"| `{fld.type_name}` | `{fld.name}` | {', '.join(notes)} |")
-         lines.append("")
+   # Overridable methods
+   overridable = [m for m in cls.methods
+                  if m.access in ('protected', 'internal')
+                  and (m.is_virtual or m.is_abstract)]
+   if overridable:
+      lines.append("**Overridable:**")
+      for meth in overridable:
+         mods = []
+         if meth.is_virtual:
+            mods.append("virtual")
+         if meth.is_abstract:
+            mods.append("abstract")
+         params_str = ", ".join(_format_param(p) for p in meth.parameters)
+         mod_str = f" *[{', '.join(mods)}]*" if mods else ""
+         sig = f"- `{meth.return_type} {meth.name}({params_str})`{mod_str}"
+         if meth.doc_summary:
+            sig += f"  — {meth.doc_summary}"
+         lines.append(sig)
+      lines.append("")
 
-      # Properties
-      public_props = [p for p in cls.properties if p.access == 'public']
-      if public_props:
-         lines.append("### Properties")
-         lines.append("| Type | Name | get | set | Notes |")
-         lines.append("|------|------|-----|-----|-------|")
-         for prop in public_props:
-            notes = []
-            if prop.is_static:
-               notes.append("static")
-            lines.append(
-               f"| `{prop.type_name}` | `{prop.name}` "
-               f"| {'✓' if prop.has_getter else '—'} "
-               f"| {'✓' if prop.has_setter else '—'} "
-               f"| {', '.join(notes)} |"
-            )
-         lines.append("")
-
-      # Methods — split into lifecycle, public API, and overridable
-      # Only detect Unity lifecycle for MonoBehaviour-derived classes
-      is_unity_class = any(
-         b.strip() in ('MonoBehaviour', 'NetworkBehaviour', 'ScriptableObject', 'Editor', 'EditorWindow')
-         for b in cls.base_classes
-      )
-      lifecycle = [m for m in cls.methods if is_unity_class and _is_unity_lifecycle(m.name)]
-      public_api = [m for m in cls.methods
-                    if m.access == 'public'
-                    and not (is_unity_class and _is_unity_lifecycle(m.name))]
-      overridable = [m for m in cls.methods
-                     if m.access in ('protected', 'internal')
-                     and (m.is_virtual or m.is_abstract)]
-
-      if lifecycle:
-         lines.append(f"### Unity Lifecycle")
-         lines.append(f"`{'`, `'.join(m.name for m in lifecycle)}`")
-         lines.append("")
-
-      if public_api:
-         lines.append("### Public Methods")
-         for meth in public_api:
-            mods = []
-            if meth.is_static:
-               mods.append("static")
-            if meth.is_async:
-               mods.append("async")
-            if meth.is_coroutine:
-               mods.append("coroutine")
-            if meth.is_virtual:
-               mods.append("virtual")
-            if meth.is_override:
-               mods.append("override")
-
-            params_str = ", ".join(_format_param(p) for p in meth.parameters)
-            mod_str = f" *[{', '.join(mods)}]*" if mods else ""
-            lines.append(f"- `{meth.return_type} {meth.name}({params_str})`{mod_str}")
-         lines.append("")
-
-      if overridable:
-         lines.append("### Overridable (protected/internal)")
-         for meth in overridable:
-            mods = []
-            if meth.is_virtual:
-               mods.append("virtual")
-            if meth.is_abstract:
-               mods.append("abstract")
-            params_str = ", ".join(_format_param(p) for p in meth.parameters)
-            mod_str = f" *[{', '.join(mods)}]*" if mods else ""
-            lines.append(f"- `{meth.return_type} {meth.name}({params_str})`{mod_str}")
-         lines.append("")
-
-   return "\n".join(lines)
+   return lines
 
 
-def _generate_readme(all_files: list[FileInfo], output_dir: str) -> str:
-   """Generate the global README consolidation."""
+def _generate_readme(all_files: list[FileInfo]) -> str:
+   """Generate the single consolidated README.md."""
    lines = []
    lines.append("# Project Interface Map")
    lines.append("")
-   lines.append(f"Auto-generated API surface for **{len(all_files)}** C# scripts.")
-   lines.append("Each linked file contains the public API, serialized fields, dependencies,")
-   lines.append("and Unity lifecycle hooks — enough for an AI to interface with the original source.")
+   lines.append(f"Auto-generated from **{len(all_files)}** C# scripts.")
+   lines.append("Contains everything an AI needs to interface with this codebase")
+   lines.append("without reading the original source files.")
    lines.append("")
 
-   # Build dependency graph info
-   class_to_file: dict[str, str] = {}
-   for fi in all_files:
-      for cls in fi.classes:
-         class_to_file[cls.name] = fi.filename
-
-   # --- Index table ---
-   lines.append("## Script Index")
-   lines.append("")
-   lines.append("| Script | Classes | Base | Depends On |")
-   lines.append("|--------|---------|------|------------|")
-
+   # ── 1. Architecture Contracts ─────────────────────────────────────
+   contracts = []
    for fi in sorted(all_files, key=lambda f: f.filename.lower()):
-      md_name = fi.filename.replace('.cs', '.md')
-      classes = ", ".join(f"`{c.name}`" for c in fi.classes)
-      bases = set()
-      for c in fi.classes:
-         for b in c.base_classes:
-            bases.add(b)
-      bases_str = ", ".join(f"`{b}`" for b in sorted(bases)) if bases else "—"
-      deps_str = ", ".join(f"`{d}`" for d in fi.project_dependencies) if fi.project_dependencies else "—"
-      lines.append(f"| [{fi.filename}]({md_name}) | {classes} | {bases_str} | {deps_str} |")
+      if fi.file_doc_comment:
+         contracts.append((fi.filename, fi.file_doc_comment))
 
-   lines.append("")
-
-   # --- Dependency summary ---
-   lines.append("## Dependency Graph (Adjacency)")
-   lines.append("```")
-   for fi in sorted(all_files, key=lambda f: f.filename.lower()):
-      if fi.project_dependencies:
-         for dep in fi.project_dependencies:
-            lines.append(f"{fi.filename.replace('.cs','')} -> {dep}")
-   lines.append("```")
-   lines.append("")
-
-   # --- Consolidated quick-ref of all public methods ---
-   lines.append("## All Public Methods (Quick Reference)")
-   lines.append("")
-   for fi in sorted(all_files, key=lambda f: f.filename.lower()):
-      for cls in fi.classes:
-         public_api = [m for m in cls.methods
-                       if m.access == 'public' and not _is_unity_lifecycle(m.name)]
-         if not public_api:
-            continue
-         lines.append(f"### `{cls.name}`")
-         for meth in public_api:
-            params_str = ", ".join(_format_param(p) for p in meth.parameters)
-            lines.append(f"- `{meth.return_type} {meth.name}({params_str})`")
+   if contracts:
+      lines.append("## Architecture Contracts")
+      lines.append("")
+      for fname, doc in contracts:
+         lines.append(f"### From `{fname}`")
+         for dline in doc.split('\n'):
+            stripped = dline.strip()
+            # Skip lines that just echo the filename
+            if stripped == fname or stripped == fname.replace('.cs', ''):
+               continue
+            lines.append(f"> {dline}" if stripped else ">")
          lines.append("")
 
-   # --- All enums ---
-   all_enums = []
+   # ── 2. Runtime Flow ───────────────────────────────────────────────
+   flow_lines = _infer_runtime_flow(all_files)
+   if flow_lines:
+      lines.append("## Runtime Flow")
+      lines.append("")
+      for fl in flow_lines:
+         lines.append(fl)
+      lines.append("")
+
+   # ── 3. Shared Constants & Enums ───────────────────────────────────
+   all_consts: list[ConstInfo] = []
+   all_enums: list[tuple[str, Optional[str], EnumInfo]] = []
+
    for fi in all_files:
       for e in fi.top_level_enums:
          all_enums.append((fi.filename, None, e))
       for cls in fi.classes:
          for e in cls.enums:
             all_enums.append((fi.filename, cls.name, e))
+         for fld in cls.fields:
+            if fld.is_const or (fld.is_static and fld.is_readonly):
+               if fld.access in ('public', 'internal'):
+                  all_consts.append(ConstInfo(
+                     name=fld.name,
+                     type_name=fld.type_name,
+                     value=fld.default_value.strip() if fld.default_value else "?",
+                     access=fld.access,
+                     owner_class=cls.name,
+                  ))
 
-   if all_enums:
-      lines.append("## All Enums")
+   if all_enums or all_consts:
+      lines.append("## Shared Constants & Enums")
       lines.append("")
-      for fname, cls_name, enum in sorted(all_enums, key=lambda x: x[2].name):
-         scope = f"{cls_name}." if cls_name else ""
-         lines.append(f"- **{scope}{enum.name}**: {', '.join(f'`{v}`' for v in enum.values)}  *(in {fname})*")
+
+      if all_enums:
+         for fname, cls_name, enum in sorted(all_enums, key=lambda x: x[2].name):
+            scope = f"{cls_name}." if cls_name else ""
+            vals = ', '.join(f'`{v}`' for v in enum.values)
+            lines.append(f"- **enum {scope}{enum.name}:** {vals}  *(in {fname})*")
+         lines.append("")
+
+      if all_consts:
+         lines.append("| Owner | Type | Name | Value |")
+         lines.append("|-------|------|------|-------|")
+         for c in sorted(all_consts, key=lambda x: (x.owner_class, x.name)):
+            # Collapse multi-line values to single line for table
+            val = ' '.join(c.value.split())
+            # Truncate very long values (e.g. large array initializers)
+            if len(val) > 120:
+               val = val[:117] + "..."
+            lines.append(
+               f"| `{c.owner_class}` | `{c.type_name}` "
+               f"| `{c.name}` | `{val}` |"
+            )
+         lines.append("")
+
+   # ── 4. Dependency Graph ───────────────────────────────────────────
+   has_deps = any(fi.project_dependencies for fi in all_files)
+   if has_deps:
+      lines.append("## Dependency Graph")
+      lines.append("```")
+      for fi in sorted(all_files, key=lambda f: f.filename.lower()):
+         if fi.project_dependencies:
+            for dep in fi.project_dependencies:
+               src_name = fi.filename.replace('.cs', '')
+               lines.append(f"{src_name} -> {dep}")
+      lines.append("```")
       lines.append("")
+
+   # ── 5. Script Index ───────────────────────────────────────────────
+   lines.append("## Script Index")
+   lines.append("")
+   lines.append("| Script | Classes | Base | Depends On | Editor? |")
+   lines.append("|--------|---------|------|------------|---------|")
+
+   for fi in sorted(all_files, key=lambda f: f.filename.lower()):
+      classes = ", ".join(f"`{c.name}`" for c in fi.classes)
+      bases = set()
+      for c in fi.classes:
+         for b in c.base_classes:
+            bases.add(b)
+      bases_str = ", ".join(f"`{b}`" for b in sorted(bases)) if bases else "—"
+      deps_str = (", ".join(f"`{d}`" for d in fi.project_dependencies)
+                  if fi.project_dependencies else "—")
+      editor_str = "✓" if fi.has_editor_guard else "—"
+      lines.append(
+         f"| `{fi.filename}` | {classes} "
+         f"| {bases_str} | {deps_str} | {editor_str} |"
+      )
+
+   lines.append("")
+
+   # ── 6. Per-Script Detail Sections ─────────────────────────────────
+   lines.append("## Script Details")
+   lines.append("")
+
+   for fi in sorted(all_files, key=lambda f: f.filename.lower()):
+      lines.append(f"### `{fi.filename}`")
+
+      meta_parts = []
+      if fi.namespace:
+         meta_parts.append(f"Namespace: `{fi.namespace}`")
+      if fi.project_dependencies:
+         deps = ', '.join(f'`{d}`' for d in fi.project_dependencies)
+         meta_parts.append(f"Depends on: {deps}")
+      if fi.has_editor_guard:
+         meta_parts.append("*Editor-only (`#if UNITY_EDITOR`)*")
+      if meta_parts:
+         lines.append(" · ".join(meta_parts))
+
+      lines.append("")
+
+      for cls in fi.classes:
+         class_lines = _generate_class_section(cls, fi)
+         lines.extend(class_lines)
 
    return "\n".join(lines)
 
@@ -728,9 +1082,10 @@ def _generate_readme(all_files: list[FileInfo], output_dir: str) -> str:
 
 def _main():
    parser = argparse.ArgumentParser(
-      description="Generate lightweight .md interface maps from Unity C# scripts."
+      description="Generate a single README.md interface map from Unity C# scripts."
    )
-   parser.add_argument("input_dir", help="Directory containing .cs files (searched recursively)")
+   parser.add_argument("input_dir",
+                       help="Directory containing .cs files (searched recursively)")
    parser.add_argument("output_dir", nargs="?", default=None,
                        help="Output directory (default: <input_dir>/_interface_maps/)")
    args = parser.parse_args()
@@ -761,28 +1116,22 @@ def _main():
       except Exception as e:
          print(f"  WARN: Failed to parse {cs_path.name}: {e}")
 
-   # Generate per-file markdown
-   for fi in all_file_infos:
-      md_content = _generate_file_md(fi, all_filenames)
-      md_path = output_dir / fi.filename.replace('.cs', '.md')
-      with open(md_path, 'w', encoding='utf-8') as f:
-         f.write(md_content)
+   # Resolve cross-file dependencies
+   _resolve_dependencies(all_file_infos, all_filenames)
 
-   # Generate global README
-   readme_content = _generate_readme(all_file_infos, str(output_dir))
+   # Generate single README
+   readme_content = _generate_readme(all_file_infos)
    readme_path = output_dir / "README.md"
    with open(readme_path, 'w', encoding='utf-8') as f:
       f.write(readme_content)
 
-   print(f"Generated {len(all_file_infos)} interface maps + README.md in '{output_dir}'")
+   print(f"Generated README.md in '{output_dir}'")
 
-   # Token estimate
+   # Size estimate
    total_src = sum(os.path.getsize(str(p)) for p in cs_files)
-   total_md = sum(os.path.getsize(str(output_dir / fi.filename.replace('.cs', '.md')))
-                  for fi in all_file_infos)
-   total_md += os.path.getsize(str(readme_path))
+   total_md = os.path.getsize(str(readme_path))
    ratio = (total_md / total_src * 100) if total_src > 0 else 0
-   print(f"Source total: {total_src:,} bytes -> Interface maps total: {total_md:,} bytes ({ratio:.1f}%)")
+   print(f"Source: {total_src:,} bytes -> README: {total_md:,} bytes ({ratio:.1f}%)")
 
 
 if __name__ == "__main__":
